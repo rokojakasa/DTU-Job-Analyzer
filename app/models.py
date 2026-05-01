@@ -37,14 +37,20 @@ class JobPostingUploadResponse(BaseModel):
 
 
 # ── Analysis ──────────────────────────────────────────────────────────────────
+class EvidenceType(str, Enum):
+    EXPLICIT = "explicit"
+    IMPLICIT = "implicit"
+    BARE_CLAIM = "bare_claim"
 
 class CoveredSkill(BaseModel):
-    label: str
+    label: str                    # canonical, general form
+    job_posting_label: str        # as phrased in the job posting  
     evidence_from_cv: str
-
+    evidence_type: EvidenceType
 
 class SkillGap(BaseModel):
-    label: str
+    label: str                    # canonical form — used for course matching
+    job_posting_label: str        # kept for readable feedback
 
 
 class AnalysisResponse(BaseModel):

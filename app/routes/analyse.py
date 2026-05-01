@@ -1,13 +1,14 @@
-from app.store import AnalysisResult
+from fastapi import APIRouter, Depends
 from app.dependencies import require_cv_and_job_posting
-from fastapi import APIRouter, Depends, HTTPException, status, Form
+from app.models import AnalysisResponse
+from app.services.analyser import run_analysis
+from app.store import Store
 
 router = APIRouter()
 
-@router.get("/", response_model=AnalysisResult, status_code=status.HTTP_200_OK)
-async def get_analysis(
-    store = Depends(require_cv_and_job_posting),
-) -> AnalysisResult:
-    """Perform analysis of the uploaded CV and job posting, returning skill gaps, course recommendations, and interview questions."""
-    
-    return store.get_analysis()
+@router.get("/", response_model=AnalysisResponse, status_code=200)
+async def get_analysis(store: Store = Depends(require_cv_and_job_posting)) -> AnalysisResponse:
+
+    result = await run_analysis(store.cv_text, store.job_posting_text)
+    store.last_analysis = result
+    return AnalysisResponse(**result.__dict__)
