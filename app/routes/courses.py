@@ -3,12 +3,13 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import numpy as np
 from typing import Annotated
 
 from fastapi import APIRouter, Depends, Query
 
 from app.config import COURSES_TOP_K
-from app.dependencies import get_course_index, require_analysis
+from app.dependencies import get_course_chunks, get_course_matrix, require_analysis
 from app.models import CoursesResponse
 from app.services.courses.aggregator import aggregate_all
 from app.services.courses.index import ObjectiveChunk
@@ -22,7 +23,8 @@ router = APIRouter()
 @router.post("/", response_model=CoursesResponse, status_code=200)
 async def get_courses(
     store: Store = Depends(require_analysis),
-    index: list[ObjectiveChunk] = Depends(get_course_index),
+    chunks: list[ObjectiveChunk] = Depends(get_course_chunks), 
+    matrix: np.ndarray = Depends(get_course_matrix),   
     retrieval_mode: Annotated[
         RetrievalMode,
         Query(
@@ -60,7 +62,8 @@ async def get_courses(
     hits_per_gap: list = await asyncio.gather(*[
         retrieve(
             query=label,
-            chunks=index,
+            chunks=chunks,
+            matrix=matrix,
             top_k=COURSES_TOP_K,
             mode=retrieval_mode,
         )

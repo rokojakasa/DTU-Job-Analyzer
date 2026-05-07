@@ -2,14 +2,30 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 
+import logging
+import time
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(name)s %(levelname)s %(message)s",
+)
+
+logger = logging.getLogger(__name__)
+
+logger.info("importing Store...")
 from app.store import Store
-from app.routes import cv, job_posting, analyse, courses
+logger.info("importing routes...")
+from app.routes import cv, job_posting, analyse
+logger.info("importing courses route...")
+from app.routes import courses
+logger.info("importing build_index...")
 from app.services.courses.index import build_index
+logger.info("all imports done")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     app.state.store = Store()
-    app.state.course_index = await build_index()
+    app.state.course_chunks, app.state.course_matrix = await build_index()
     yield
 
 

@@ -3,9 +3,13 @@ from fastapi import HTTPException, Request, status, Depends
 from app.store import Store
 
 from app.services.courses.index import ObjectiveChunk
+import numpy as np
 
-def get_course_index(request: Request) -> list[ObjectiveChunk]:
-    return request.app.state.course_index
+def get_course_chunks(request: Request) -> list[ObjectiveChunk]:
+    return request.app.state.course_chunks
+
+def get_course_matrix(request: Request) -> np.ndarray:
+    return request.app.state.course_matrix
 
 def get_store(request: Request) -> Store:
     return request.app.state.store

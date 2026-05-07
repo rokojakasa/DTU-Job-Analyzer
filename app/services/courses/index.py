@@ -28,7 +28,7 @@ class ObjectiveChunk:
     title: str
     ects: int
     objective: str
-    embedding: np.ndarray = field(default_factory=lambda: np.array([]))
+    # embedding: np.ndarray = field(default_factory=lambda: np.array([]))
     
 def load_chunks(path: Path = DTU_COURSES_PATH) -> list[ObjectiveChunk]:
     """
@@ -63,7 +63,7 @@ async def embed_chunks(
     chunks: list[ObjectiveChunk],
     batch_size: int = EMBED_BATCH_SIZE,
     batch_delay: float = BATCH_DELAY,
-) -> list[ObjectiveChunk]:
+) -> tuple[list[ObjectiveChunk], np.ndarray]:
     """
     Embed all objective chunks via the CampusAI embeddings API.
  
@@ -98,13 +98,12 @@ async def embed_chunks(
         if batch_idx < num_batches - 1:
             await asyncio.sleep(batch_delay)
  
-    for chunk, emb in zip(chunks, all_embeddings):
-        chunk.embedding = np.array(emb, dtype=np.float32)
+    matrix = np.array(all_embeddings, dtype=np.float32)
  
     logger.info("Finished embedding %d chunks.", total)
-    return chunks
+    return chunks, matrix
 
-def save_index(chunks: list[ObjectiveChunk], path: Path = INDEX_CACHE_PATH) -> None:
+def save_index(chunks: list[ObjectiveChunk], matrix: np.ndarray, path: Path = INDEX_CACHE_PATH) -> None:
     """
     Persist the embedded index to a compressed numpy archive.
  
@@ -115,7 +114,7 @@ def save_index(chunks: list[ObjectiveChunk], path: Path = INDEX_CACHE_PATH) -> N
  
     np.savez_compressed(
         path,
-        embeddings=np.stack([c.embedding for c in chunks]),  # (N, dim)
+        embeddings=matrix,  # (N, dim)
         course_codes=np.array([c.course_code for c in chunks]),
         titles=np.array([c.title for c in chunks]),
         ects=np.array([c.ects for c in chunks], dtype=np.int16),
@@ -123,13 +122,15 @@ def save_index(chunks: list[ObjectiveChunk], path: Path = INDEX_CACHE_PATH) -> N
     )
     logger.info("Saved index with %d chunks to %s.", len(chunks), path)
 
-def load_index(path: Path = INDEX_CACHE_PATH) -> list[ObjectiveChunk]:
+def load_index(path: Path = INDEX_CACHE_PATH) -> tuple[list[ObjectiveChunk], np.ndarray]:
     """
     Load a previously saved index from a .npz file.
     Returns a list of ObjectiveChunks with embeddings already attached.
     """
     data = np.load(path, allow_pickle=False)
     n = len(data["embeddings"])
+    
+    matrix = data["embeddings"]  # (N, dim)
  
     chunks = [
         ObjectiveChunk(
@@ -137,13 +138,13 @@ def load_index(path: Path = INDEX_CACHE_PATH) -> list[ObjectiveChunk]:
             title=str(data["titles"][i]),
             ects=int(data["ects"][i]),
             objective=str(data["objectives"][i]),
-            embedding=data["embeddings"][i],  # already float32
+            # embedding=data["embeddings"][i],  # already float32
         )
         for i in range(n)
     ]
  
     logger.info("Loaded index with %d chunks from %s.", n, path)
-    return chunks
+    return chunks, matrix
 
 def _cache_is_fresh(
     cache_path: Path = INDEX_CACHE_PATH,
@@ -180,7 +181,7 @@ async def build_index(force_rebuild: bool = False) -> list[ObjectiveChunk]:
     logger.info("Building index from scratch (%s). This may take a while...", reason)
  
     chunks = load_chunks()
-    chunks = await embed_chunks(chunks)
-    save_index(chunks)
+    chunks, matrix = await embed_chunks(chunks)
+    save_index(chunks, matrix)
  
-    return chunks
+    return chunks, matrix

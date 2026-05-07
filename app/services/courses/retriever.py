@@ -98,6 +98,7 @@ def _sparse_retrieve(
 async def _dense_retrieve(
     query: str,
     chunks: list[ObjectiveChunk],
+    matrix: np.ndarray,
     top_k: int,
 ) -> list[tuple[ObjectiveChunk, float]]:
     """
@@ -107,8 +108,7 @@ async def _dense_retrieve(
     query_vec = await _embed_query(query)
  
     # Stack all embeddings into a matrix for a single vectorised similarity op.
-    chunk_matrix = np.stack([c.embedding for c in chunks])  # (N, dim)
-    scores = _cosine_similarity(query_vec, chunk_matrix)     # (N,)
+    scores = _cosine_similarity(query_vec, matrix)     # (N,)
  
     top_indices = np.argsort(scores)[::-1][:top_k]
     return [(chunks[i], float(scores[i])) for i in top_indices]
@@ -116,6 +116,7 @@ async def _dense_retrieve(
 async def _hybrid_retrieve(
     query: str,
     chunks: list[ObjectiveChunk],
+    matrix: np.ndarray,
     top_k: int,
     candidate_pool: int = _HYBRID_CANDIDATE_POOL,
 ) -> list[tuple[ObjectiveChunk, float]]:
@@ -138,7 +139,7 @@ async def _hybrid_retrieve(
  
     # Step 2 — Dense reranks the shortlist.
     query_vec = await _embed_query(query)
-    candidate_matrix = np.stack([c.embedding for c in candidates])  # (pool, dim)
+    candidate_matrix = matrix[candidate_indices]  # (pool, dim)
     dense_scores = _cosine_similarity(query_vec, candidate_matrix)  # (pool,)
  
     top_indices = np.argsort(dense_scores)[::-1][:top_k]
@@ -147,6 +148,7 @@ async def _hybrid_retrieve(
 async def retrieve(
     query: str,
     chunks: list[ObjectiveChunk],
+    matrix: np.ndarray,
     top_k: int,
     mode: RetrievalMode = "hybrid",
 ) -> list[tuple[ObjectiveChunk, float]]:
@@ -167,8 +169,8 @@ async def retrieve(
     if mode == "sparse":
         return _sparse_retrieve(query, chunks, top_k)
     elif mode == "dense":
-        return _dense_retrieve(query, chunks, top_k)
+        return _dense_retrieve(query, chunks, matrix, top_k)
     elif mode == "hybrid":
-        return _hybrid_retrieve(query, chunks, top_k)
+        return _hybrid_retrieve(query, chunks, matrix, top_k)
     else:
         raise ValueError(f"Unknown retrieval mode: {mode!r}. Choose sparse, dense, or hybrid.")
