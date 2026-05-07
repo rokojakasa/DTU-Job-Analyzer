@@ -35,6 +35,5 @@ async def run_analysis(cv: str, job_posting: str) -> AnalysisResult:
         job_title_inferred=data["job_title_inferred"],
         covered_skills=data["covered_skills"],
         skill_gaps=data["skill_gaps"],
-        coverage_score=data["coverage_score"],
         summary=data["summary"],
     )

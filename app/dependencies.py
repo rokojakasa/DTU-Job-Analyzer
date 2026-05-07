@@ -2,6 +2,10 @@ from fastapi import HTTPException, Request, status, Depends
 
 from app.store import Store
 
+from app.services.courses.index import ObjectiveChunk
+
+def get_course_index(request: Request) -> list[ObjectiveChunk]:
+    return request.app.state.course_index
 
 def get_store(request: Request) -> Store:
     return request.app.state.store

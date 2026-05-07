@@ -57,7 +57,6 @@ class AnalysisResponse(BaseModel):
     job_title_inferred: str
     covered_skills: list[CoveredSkill]
     skill_gaps: list[SkillGap]
-    coverage_score: float
     summary: str
 
 

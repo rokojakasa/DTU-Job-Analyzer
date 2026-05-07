@@ -36,12 +36,7 @@ Place each skill in exactly one of two buckets:
 
   skill_gaps — no evidence of this skill anywhere in the CV
 
-STEP 4 — Compute coverage_score.
-  covered_skills / (covered_skills + skill_gaps), rounded to 2 decimal places.
-  Count bare_claim skills as 0.5, not 1.0 — they are weak signal.
-  A score above 0.85 should be rare. If you reach it, re-examine your matching.
-
-STEP 5 — Write a 1-2 sentence summary for the candidate.
+STEP 4 — Write a 1-2 sentence summary for the candidate.
   If any skills are classified as bare_claim, name them and suggest adding
   supporting context such as a project, course, or work experience.
 
@@ -65,6 +60,5 @@ Respond ONLY with a JSON object matching this schema — no markdown, no explana
       "label": "<canonical verb-noun form>"
     }}
   ],
-  "coverage_score": <float>,
   "summary": "<string>"
 }}"""

@@ -7,7 +7,6 @@ class AnalysisResult:
     job_title_inferred: str
     covered_skills: list[dict]
     skill_gaps: list[dict]
-    coverage_score: float
     summary: str
 
 @dataclass
