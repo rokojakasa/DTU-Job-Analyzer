@@ -4,10 +4,11 @@ import logging
 from typing import Literal
  
 import numpy as np
+import json
 from openai import AsyncOpenAI
 from rank_bm25 import BM25Okapi
  
-from app.config import CAMPUSAI_API_KEY, CAMPUSAI_URL, EMBED_MODEL
+from app.config import CAMPUSAI_API_KEY, CAMPUSAI_URL, EMBED_MODEL, CHAT_MODEL
 from app.services.courses.index import ObjectiveChunk
  
 logger = logging.getLogger(__name__)
@@ -48,6 +49,66 @@ def _build_bm25(chunks: list[ObjectiveChunk]) -> BM25Okapi:
     corpus = [_tokenise(chunk.objective) for chunk in chunks]
     return BM25Okapi(corpus)
 
+async def transform_query(label: str) -> str:
+    prompt = f"""You are helping match industry job requirements to university course topics.
+
+    Rephrase the following industry skill as a short academic topic that would appear 
+    in a university course title or learning objective.
+
+    Rules:
+    - Use broad academic vocabulary, not industry jargon or brand names
+    - Return 4-8 words maximum
+    - Return ONLY the rephrased topic, nothing else
+
+    Examples:
+    "build LLM pipelines"        → "natural language processing and neural networks"
+    "manage cloud infrastructure" → "distributed systems and cloud computing"
+    "write REST APIs"             → "web services and network programming"
+    "implement CI/CD pipelines"   → "software development and deployment automation"
+
+    Skill: {label}
+    Rephrased:"""
+    
+    response = await client.chat.completions.create(
+        model=CHAT_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+    )
+    return response.choices[0].message.content.strip()
+
+async def expand_query(label: str, job_title: str) -> list[str]:
+    prompt = f"""You are helping match industry job skills to university course topics.
+
+        The candidate is applying for position as: {job_title}
+        
+        Given an industry skill, return a JSON array of 3 search queries ordered from most specific to most general.
+        The first query should preserve the original phrasing where useful.
+        The others should use broader academic vocabulary a university course title or learning objective would use.
+
+        Return ONLY a valid JSON array of strings, no explanation.
+
+        Examples:
+        "program in C# and .NET" → ["C# and .NET programming", "object-oriented programming", "software frameworks and design patterns"]
+        "build LLM pipelines"    → ["large language model pipelines", "natural language processing", "machine learning and neural networks"]
+        "manage MS SQL"          → ["MS SQL database", "relational database management", "data modelling and query languages"]
+
+        Skill: {label}
+        Queries:"""
+    response = await client.chat.completions.create(
+        model=CHAT_MODEL,
+        messages=[{"role": "user", "content": prompt}],
+        temperature=0.0,
+    )
+    raw = response.choices[0].message.content.strip()
+    try:
+        queries = json.loads(raw)
+        if not isinstance(queries, list) or not queries:
+            raise ValueError("Expected a non-empty list")
+        logger.info("Expanded skill gap label %r to queries %r for better retrieval.", label, queries)
+        return queries
+    except (json.JSONDecodeError, ValueError):
+        logger.warning("Query expansion failed to parse, falling back to original: %r", raw)
+        return [label]  # graceful degradation
+
 async def _embed_query(query: str) -> np.ndarray:
     """
     Embed a single skill gap query via the CampusAI embeddings API.
@@ -79,7 +140,7 @@ def _cosine_similarity(query_vec: np.ndarray, chunk_matrix: np.ndarray) -> np.nd
     chunk_norms = chunk_matrix / (np.linalg.norm(chunk_matrix, axis=1, keepdims=True) + 1e-10)
     return chunk_norms @ query_norm
 
-def _sparse_retrieve(
+async def _sparse_retrieve(
     query: str,
     chunks: list[ObjectiveChunk],
     top_k: int,
@@ -167,10 +228,35 @@ async def retrieve(
     logger.debug("Retrieving top-%d chunks for %r using %s mode.", top_k, query, mode)
  
     if mode == "sparse":
-        return _sparse_retrieve(query, chunks, top_k)
+        return await _sparse_retrieve(query, chunks, top_k)
     elif mode == "dense":
-        return _dense_retrieve(query, chunks, matrix, top_k)
+        return await _dense_retrieve(query, chunks, matrix, top_k)
     elif mode == "hybrid":
-        return _hybrid_retrieve(query, chunks, matrix, top_k)
+        return await _hybrid_retrieve(query, chunks, matrix, top_k)
     else:
         raise ValueError(f"Unknown retrieval mode: {mode!r}. Choose sparse, dense, or hybrid.")
+
+async def retrieve_expanded(
+    queries: list[str],
+    chunks: list[ObjectiveChunk],
+    matrix: np.ndarray,
+    top_k: int,
+    mode: RetrievalMode = "hybrid",
+) -> list[tuple[ObjectiveChunk, float]]:
+    # Retrieve for each expanded query concurrently
+    results_per_query = []
+    for q in queries:
+        hits = await retrieve(query=q, chunks=chunks, matrix=matrix, top_k=top_k, mode=mode)
+        results_per_query.append(hits)
+
+    # Merge: max score per course code across all queries
+    best: dict[str, tuple[ObjectiveChunk, float]] = {}
+    for hits in results_per_query:
+        for chunk, score in hits:
+            code = chunk.course_code
+            if code not in best or score > best[code][1]:
+                best[code] = (chunk, score)
+
+    # Re-sort and return top_k
+    merged = sorted(best.values(), key=lambda x: x[1], reverse=True)
+    return merged[:top_k]

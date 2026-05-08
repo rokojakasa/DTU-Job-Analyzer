@@ -23,6 +23,9 @@ For each skill produce two labels:
   - "label": a canonical form for matching against academic course descriptions
       · Use verb-noun form ("manage relational databases", "apply machine learning")
       · Avoid brand names ("manage relational databases" not "use MS SQL")
+  - A canonical label may appear in at most one bucket. If the same canonical skill appears in both
+  covered and skill_gaps (e.g. because the job lists two related technologies), 
+  place it in covered_skills if any evidence exists, and collapse the gap entry.
 
 STEP 3 — For each required skill, assess whether the CV demonstrates it.
 Place each skill in exactly one of two buckets:

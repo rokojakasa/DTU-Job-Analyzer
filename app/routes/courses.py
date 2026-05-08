@@ -13,7 +13,7 @@ from app.dependencies import get_course_chunks, get_course_matrix, require_analy
 from app.models import CoursesResponse
 from app.services.courses.aggregator import aggregate_all
 from app.services.courses.index import ObjectiveChunk
-from app.services.courses.retriever import RetrievalMode, retrieve
+from app.services.courses.retriever import RetrievalMode, retrieve_expanded, expand_query
 from app.store import Store
 
 logger = logging.getLogger(__name__)
@@ -57,18 +57,18 @@ async def get_courses(
         len(gap_labels),
         retrieval_mode,
     )
+    
+    expanded_per_gap = []
+    for label in gap_labels:
+        expanded = await expand_query(label, job_title=analysis.job_title_inferred)
+        expanded_per_gap.append(expanded)
 
     # Retrieve concurrently — each gap is independent.
-    hits_per_gap: list = await asyncio.gather(*[
-        retrieve(
-            query=label,
-            chunks=chunks,
-            matrix=matrix,
-            top_k=COURSES_TOP_K,
-            mode=retrieval_mode,
-        )
-        for label in gap_labels
-    ])
+    # instead of asyncio.gather
+    hits_per_gap = []
+    for queries in expanded_per_gap:
+        hits = await retrieve_expanded(queries, chunks, matrix, COURSES_TOP_K, retrieval_mode)
+        hits_per_gap.append(hits)
 
     recommendations = aggregate_all(
         skill_gaps=gap_labels,

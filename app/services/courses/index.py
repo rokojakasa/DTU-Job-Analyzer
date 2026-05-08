@@ -123,27 +123,28 @@ def save_index(chunks: list[ObjectiveChunk], matrix: np.ndarray, path: Path = IN
     logger.info("Saved index with %d chunks to %s.", len(chunks), path)
 
 def load_index(path: Path = INDEX_CACHE_PATH) -> tuple[list[ObjectiveChunk], np.ndarray]:
-    """
-    Load a previously saved index from a .npz file.
-    Returns a list of ObjectiveChunks with embeddings already attached.
-    """
     data = np.load(path, allow_pickle=False)
-    n = len(data["embeddings"])
     
-    matrix = data["embeddings"]  # (N, dim)
- 
+    # Convert all arrays to Python lists up front — one vectorized operation each
+    course_codes = data["course_codes"].tolist()
+    titles = data["titles"].tolist()
+    ects = data["ects"].tolist()
+    objectives = data["objectives"].tolist()
+    matrix = data["embeddings"]
+
+    logger.info("arrays converted, building chunks...")
+
     chunks = [
         ObjectiveChunk(
-            course_code=str(data["course_codes"][i]),
-            title=str(data["titles"][i]),
-            ects=int(data["ects"][i]),
-            objective=str(data["objectives"][i]),
-            # embedding=data["embeddings"][i],  # already float32
+            course_code=course_codes[i],
+            title=titles[i],
+            ects=ects[i],
+            objective=objectives[i],
         )
-        for i in range(n)
+        for i in range(len(course_codes))
     ]
- 
-    logger.info("Loaded index with %d chunks from %s.", n, path)
+
+    logger.info("Loaded index with %d chunks from %s.", len(chunks), path)
     return chunks, matrix
 
 def _cache_is_fresh(
