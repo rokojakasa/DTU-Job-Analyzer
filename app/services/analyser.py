@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 from app.config import CAMPUSAI_API_KEY, CAMPUSAI_URL, CHAT_MODEL
 from app.models import JobRequirements
 from app.prompts import build_intent_prompt, build_analyse_prompt
-from app.store import AnalysisResult
+from app.models import AnalysisResponse
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,7 @@ async def _interpret_job_posting(job_posting: str) -> JobRequirements:
     return requirements
 
 
-async def _analyse_cv(cv: str, requirements: JobRequirements) -> AnalysisResult:
+async def _analyse_cv(cv: str, requirements: JobRequirements) -> AnalysisResponse:
     """Pass 2 — match CV against structured requirements, produce gap analysis."""
     prompt = build_analyse_prompt(cv, requirements.model_dump_json(indent=2))
     response = await client.chat.completions.create(
@@ -52,14 +52,9 @@ async def _analyse_cv(cv: str, requirements: JobRequirements) -> AnalysisResult:
     )
     raw = response.choices[0].message.content.strip()
     data = _parse_json(raw, "Pass 2 (analysis)")
-    return AnalysisResult(
-        job_title_inferred=data["job_title_inferred"],
-        covered_skills=data["covered_skills"],
-        skill_gaps=data["skill_gaps"],
-        summary=data["summary"],
-    )
+    return AnalysisResponse(**data)
 
 
-async def run_analysis(cv: str, job_posting: str) -> AnalysisResult:
+async def run_analysis(cv: str, job_posting: str) -> AnalysisResponse:
     requirements = await _interpret_job_posting(job_posting)
     return await _analyse_cv(cv, requirements)

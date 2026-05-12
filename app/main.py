@@ -13,18 +13,18 @@ logging.basicConfig(
 )
 
 @asynccontextmanager
-async def lifespan(app: FastAPI):
+async def default_lifespan(app: FastAPI):
     app.state.store = Store()
     app.state.course_chunks, app.state.course_matrix = await build_index()
     yield
 
 
-def create_app() -> FastAPI:
+def create_app(lifespan=None) -> FastAPI:
     app = FastAPI(
         title="DTU Job Analyzer",
         description="Identify skill gaps, get course recommendations, and prepare for interviews.",
         version="0.1.0",
-        lifespan=lifespan,
+        lifespan=lifespan or default_lifespan,
     )
 
     app.include_router(cv.router, prefix="/cv", tags=["CV"])

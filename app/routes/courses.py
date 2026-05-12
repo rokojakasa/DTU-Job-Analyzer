@@ -1,7 +1,6 @@
 # app/routes/courses.py
 from __future__ import annotations
 
-import asyncio
 import logging
 import numpy as np
 from typing import Annotated
@@ -50,7 +49,7 @@ async def get_courses(
         logger.info("No skill gaps found in analysis — returning empty recommendations.")
         return CoursesResponse(recommendations=[])
 
-    gap_labels = [gap["label"] for gap in skill_gaps]
+    gap_labels = [gap.label for gap in skill_gaps]
 
     logger.info(
         "Retrieving courses for %d skill gaps using %r mode.",
@@ -63,8 +62,6 @@ async def get_courses(
         expanded = await expand_query(label, job_title=analysis.job_title_inferred)
         expanded_per_gap.append(expanded)
 
-    # Retrieve concurrently — each gap is independent.
-    # instead of asyncio.gather
     hits_per_gap = []
     for queries in expanded_per_gap:
         hits = await retrieve_expanded(queries, chunks, matrix, COURSES_TOP_K, retrieval_mode)

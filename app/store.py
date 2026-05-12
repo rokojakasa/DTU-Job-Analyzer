@@ -1,19 +1,13 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Optional
-
-@dataclass
-class AnalysisResult:
-    job_title_inferred: str
-    covered_skills: list[dict]
-    skill_gaps: list[dict]
-    summary: str
+from app.models import AnalysisResponse
 
 @dataclass
 class Store:
     cv_text: Optional[str] = field(default=None)
     job_posting_text: Optional[str] = field(default=None)
-    last_analysis: Optional[AnalysisResult] = field(default=None)
+    last_analysis: Optional[AnalysisResponse] = field(default=None)
     
     def set_cv(self, text: str):
         self.cv_text = text

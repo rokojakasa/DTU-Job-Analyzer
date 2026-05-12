@@ -5,7 +5,7 @@ from openai import AsyncOpenAI
 from app.config import CAMPUSAI_API_KEY, CAMPUSAI_URL, CHAT_MODEL
 from app.models import InterviewQuestion
 from app.prompts import build_questions_prompt
-from app.store import AnalysisResult
+from app.models import AnalysisResponse
 
 logger = logging.getLogger(__name__)
 
@@ -14,11 +14,11 @@ client = AsyncOpenAI(
     base_url=CAMPUSAI_URL,
 )
 
-async def generate_questions(cv: str, analysis: AnalysisResult) -> list[InterviewQuestion]:
+async def generate_questions(cv: str, analysis: AnalysisResponse) -> list[InterviewQuestion]:
     prompt = build_questions_prompt(
         cv=cv,
-        covered_skills=[s if isinstance(s, dict) else s.__dict__ for s in analysis.covered_skills],
-        skill_gaps=[g if isinstance(g, dict) else g.__dict__ for g in analysis.skill_gaps],
+        covered_skills=[s.model_dump() for s in analysis.covered_skills],  
+        skill_gaps=[g.model_dump() for g in analysis.skill_gaps],           
         job_title=analysis.job_title_inferred,
     )
 

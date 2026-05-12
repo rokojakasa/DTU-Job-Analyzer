@@ -46,6 +46,8 @@ def _build_bm25(chunks: list[ObjectiveChunk]) -> BM25Okapi:
     Called once per retrieval request — BM25Okapi is cheap to construct
     at this scale (~15k short documents).
     """
+    if not chunks:
+        return None
     corpus = [_tokenise(chunk.objective) for chunk in chunks]
     return BM25Okapi(corpus)
 
@@ -150,6 +152,8 @@ async def _sparse_retrieve(
     Struggles with vocabulary mismatch (synonyms, paraphrasing).
     """
     bm25 = _build_bm25(chunks)
+    if bm25 is None:
+        return []
     query_tokens = _tokenise(query)
     scores = bm25.get_scores(query_tokens)  # shape (N,)
  
@@ -193,6 +197,8 @@ async def _hybrid_retrieve(
     """
     # Step 1 — BM25 retrieves a broad candidate pool.
     bm25 = _build_bm25(chunks)
+    if bm25 is None:
+        return []
     query_tokens = _tokenise(query)
     bm25_scores = bm25.get_scores(query_tokens)
     candidate_indices = np.argsort(bm25_scores)[::-1][:candidate_pool]

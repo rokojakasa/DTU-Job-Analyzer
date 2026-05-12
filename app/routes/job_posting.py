@@ -19,6 +19,11 @@ async def upload_job_posting(
         )
         
     text = text.strip()
+    if not text:
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Job posting text is empty after stripping whitespace.",
+        )
     store.set_job_posting(text)
     return JobPostingUploadResponse(
         message=f"Job posting uploaded successfully ({len(text):,} characters).",

@@ -11,4 +11,4 @@ async def get_analysis(store: Store = Depends(require_cv_and_job_posting)) -> An
 
     result = await run_analysis(store.cv_text, store.job_posting_text)
     store.last_analysis = result
-    return AnalysisResponse(**result.__dict__)
+    return result

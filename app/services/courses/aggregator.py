@@ -112,25 +112,4 @@ def aggregate_all(
     return results
  
  
-# ---------------------------------------------------------------------------
-# Internal helpers
-# ---------------------------------------------------------------------------
  
-def _resolve_action(
-    course_code: str,
-    completed_courses: set[str] | None,
-) -> CourseAction | None:
-    """
-    Determine the action for a course recommendation given the student's
-    completed courses.
- 
-    Returns:
-        None              — no transcript provided, action field omitted
-        ADD_TO_CV         — course completed but not mentioned in CV
-        CONSIDER_TAKING   — course not yet completed
-    """
-    if completed_courses is None:
-        return None
-    if course_code in completed_courses:
-        return CourseAction.ADD_TO_CV
-    return CourseAction.CONSIDER_TAKING
