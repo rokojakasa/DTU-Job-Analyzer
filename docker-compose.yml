@@ -5,10 +5,12 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    ports:
-      - "8000:8000"
+    # Use host networking so container traffic uses the host's network/VPN
+    network_mode: "host"
     volumes:
       - ./data:/app/data
+    env_file:
+      - ${HOME}/.env
     environment:
       - PYTHONUNBUFFERED=1
     healthcheck:

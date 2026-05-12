@@ -7,6 +7,7 @@ A locally-run web service that helps DTU students prepare for job applications. 
 The service holds a single CV and job posting in memory at a time. Uploading a new CV or job posting overwrites the previous one and invalidates any cached analysis.
 
 **Important note**: The service was evaluated on jobs and CVs for someone studying at DTU Compute department, as those were the ones I was familiar with and could properly evaluate.
+
 ---
 
 ## System Architecture
