@@ -276,7 +276,12 @@ import asyncio
 asyncio.run(build_index(force_rebuild=True))
 ```
 
+### Frontend
+
+`index.html` in project root can be used as simple visualization for user interaction once FastAPI service is up and running
+
 ---
+
 
 ## Tests
 
