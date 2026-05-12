@@ -79,16 +79,10 @@ class AnalysisResponse(BaseModel):
 
 # ── Courses ───────────────────────────────────────────────────────────────────
 
-class CourseAction(str, Enum):
-    ADD_TO_CV = "add_to_cv"
-    CONSIDER_TAKING = "consider_taking"
-
-
 class CourseRecommendation(BaseModel):
     course_number: str
     title: str
     ects: int
-    action: Optional[CourseAction] = None
 
 
 class SkillCourses(BaseModel):

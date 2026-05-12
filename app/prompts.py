@@ -44,8 +44,8 @@ def build_analyse_prompt(cv: str, job_requirements: dict) -> str:
     return f"""You are an expert technical recruiter and skills analyst.
 
 Given a candidate's CV and a structured summary of a job's requirements,
-produce a skills gap analysis. The job documents may be in any language. Regardless of the input language,
-all output fields must be in English.
+produce a skills gap analysis. All output fields must be in English regardless
+of the input language.
 
 CV:
 {cv}
@@ -53,36 +53,45 @@ CV:
 JOB REQUIREMENTS:
 {job_requirements}
 
-Follow these steps:
+---
 
-STEP 1 — For each skill in required_skills and bonus_skills, assess whether
-the CV demonstrates it. Place each skill in exactly one bucket:
+STEP 1 — For each skill in required_skills and bonus_skills, read the entire CV
+before making a classification. Place each skill in exactly one bucket:
 
-  covered_skills — any evidence exists, even indirect. Classify the evidence type:
-    · "explicit"    — skill is named and tied to a project, role, or course
-    · "implicit"    — skill is unnamed but expected given the context
-                      (e.g. TypeScript implied by React work)
-    · "bare_claim"  — skill appears only in a flat skills list, no supporting context
-    Set category to 'required' or 'bonus' based on which list the skill came from."
-    
+  covered_skills — any evidence exists, even indirect.
+  skill_gaps     — no evidence of this skill anywhere in the CV.
 
-  skill_gaps — no evidence of this skill anywhere in the CV.
-    · Set category: "required" for skills from required_skills
-    · Set category: "bonus" for skills from bonus_skills
+STEP 2 — For each covered skill, assign an evidence_type.
 
-STEP 2 — Apply domain knowledge when assessing coverage.
-If the CV demonstrates a technology that is functionally equivalent to a
-required skill (e.g. React instead of Angular, PostgreSQL instead of MS SQL),
-mark that skill as covered with evidence_type "implicit".
+  Before assigning bare_claim, re-read the full CV. A skill listed only in a
+  skills section is only bare_claim if the rest of the CV — projects, roles,
+  coursework — offers no context that would naturally involve it. If supporting
+  context exists anywhere, classify as implicit instead.
 
-STEP 3 — Canonical labels.
-For each skill produce:
-  - "label": canonical verb-noun form ("manage relational databases", not "MS SQL")
-  - "job_posting_label": the skill exactly as listed in required_skills or bonus_skills
+  · "explicit"   — skill is named and tied to a specific project, role, or course.
+  · "implicit"   — skill is not named, but the candidate's project work, coursework,
+                   or job history makes it implausible they listed it without genuine
+                   exposure. Apply domain knowledge: ask yourself whether someone doing
+                   what this candidate did would inevitably have used this skill.
+  · "bare_claim" — skill appears in a skills list and nothing else in the CV
+                   supports or implies it.
 
-STEP 4 — Write a 1-2 sentence summary for the candidate.
-  If any skills are bare_claim, name them and suggest adding supporting context.
-  If any gaps are bonus rather than required, note they are non-critical.
+STEP 3 — Apply equivalence when assessing coverage.
+If the CV demonstrates a technology that is functionally equivalent to a required
+skill, mark that skill as covered with evidence_type "implicit". Use your domain
+knowledge to judge equivalence — do not require an exact name match.
+
+STEP 4 — Assign category to each skill.
+  · "required" for skills from required_skills
+  · "bonus"    for skills from bonus_skills
+
+STEP 5 — Produce canonical labels.
+  · "label": verb-noun form ("manage relational databases", not "MS SQL")
+  · "job_posting_label": the skill exactly as listed in required_skills or bonus_skills
+
+STEP 6 — Write a 1–2 sentence summary for the candidate.
+  · Name any bare_claim skills and suggest adding supporting context.
+  · Note if remaining gaps are bonus rather than required.
 
 Respond ONLY with a JSON object — no markdown, no explanation:
 
@@ -117,60 +126,62 @@ def build_questions_prompt(
     required_gaps = [g for g in skill_gaps if g.get("category") == "required"]
     gaps_json = json.dumps(required_gaps, indent=2)
 
-    return f"""You are an experienced technical interviewer preparing a candidate for a {job_title} interview.
-
-Below is the candidate's CV, a list of skills they demonstrably have that are relevant to the job,
-and a list of required skills missing from their CV.
+    return f"""You are an experienced technical interviewer preparing questions for a {job_title} candidate.
 
 CV:
 {cv}
 
-COVERED SKILLS:
+COVERED SKILLS (skills the candidate demonstrates):
 {skills_json}
 
-REQUIRED SKILL GAPS:
+REQUIRED SKILL GAPS (required skills absent from the CV):
 {gaps_json}
 
-Follow these steps:
+---
 
-STEP 1 — Select 4–6 questions from covered skills.
-Prioritise skills where category is "required" over "bonus".
-Within the same category, prefer richer evidence (explicit > implicit > bare_claim).
+STEP 1 — Filter gaps before selecting.
+Discard any gap that is a certification, training programme, curriculum requirement,
+or formal qualification rather than a demonstrable technical skill.
+Examples of what to discard: "complete X programme", "hold Y certificate", "follow Z grundforløb".
+Only proceed with gaps that describe something a candidate could demonstrate in a conversation.
 
-STEP 2 — Select 1–2 questions from required skill gaps.
-Only include gaps that are central to the role — an interviewer would not probe every gap,
-only the ones they cannot overlook.
+STEP 2 — Select 4–6 questions from covered skills.
+Prioritise required over bonus. Within the same category, prefer richer evidence
+(explicit > implicit > bare_claim).
 
-STEP 3 — For each selected covered skill, generate one question and one follow-up.
-Calibrate to evidence_type:
+STEP 3 — Select 1–2 questions from the filtered gaps.
+Only include gaps central to the role — pick the ones an interviewer cannot overlook.
+If no gaps survive the Step 1 filter, return only covered-skill questions.
 
-  · explicit    — behavioural question anchored to the specific project or role mentioned.
-                  Example style: "Tell me about a time you..."
-  · implicit    — confirming question that surfaces implied knowledge without assuming mastery.
-                  Example style: "Your experience with X suggests familiarity with Y —
-                  how would you describe your comfort level with...?"
-  · bare_claim  — foundational question probing basic understanding.
-                  The follow_up should coach: what concrete project or context would
-                  strengthen this entry on their CV?
+STEP 4 — Write each question.
+Keep every question to one sentence. Write as you would actually say it in a room,
+not as you would write it in a document. Do not repeat or paraphrase the CV back
+in the question itself — the cv_anchor field carries that context separately.
 
-STEP 4 — For each selected skill gap, generate one open, non-threatening question.
-Acknowledge the skill is not in the CV without putting the candidate on the spot.
-  Example style: "We use X fairly heavily — what's your exposure to...?"
-                 "Have you had a chance to work with Y in any capacity?"
-The follow_up should invite the candidate to draw parallels to what they do know.
+Calibrate to evidence_type for covered skills:
+  · explicit    — behavioural, anchored to a project or role.
+                  Style: "Walk me through...", "Tell me about a time..."
+  · implicit    — confirming, surfaces implied knowledge without assuming mastery.
+                  Style: "How comfortable are you with X given your work on Y?"
+  · bare_claim  — foundational, probes basic understanding.
+                  The follow_up should coach: what project would strengthen this CV entry?
+
+For gap questions, keep the tone open and non-threatening.
+Style: "What's your exposure to X?", "Have you had a chance to work with Y?"
+The follow_up should invite the candidate to draw on what they do know.
 Set cv_anchor to null for gap questions.
 
-STEP 5 — For covered skill questions, write the cv_anchor.
-Quote or closely paraphrase the specific passage from the CV this question is reacting to.
-Keep it to one sentence. Do not invent passages not in the CV.
+STEP 5 — Write cv_anchor for covered-skill questions only.
+One sentence. Quote or closely paraphrase the specific CV passage this question reacts to.
+Do not invent passages not in the CV.
 
 Respond ONLY with a JSON array — no markdown, no explanation:
 
 [
   {{
     "skill": "<canonical skill label>",
-    "question": "<interview question>",
-    "follow_up": "<follow-up question or coaching note>",
-    "cv_anchor": "<specific CV passage, or null for gap questions>"
+    "question": "<one sentence, conversational>",
+    "follow_up": "<one sentence>",
+    "cv_anchor": "<specific CV passage, or null>"
   }}
 ]"""

@@ -4,7 +4,7 @@ from __future__ import annotations
 import logging
 from collections import defaultdict
  
-from app.models import CourseAction, CourseRecommendation, SkillCourses
+from app.models import CourseRecommendation, SkillCourses
 from app.services.courses.index import ObjectiveChunk
  
 logger = logging.getLogger(__name__)
@@ -18,7 +18,6 @@ def aggregate(
     skill_gap: str,
     hits: list[tuple[ObjectiveChunk, float]],
     top_k: int = _DEFAULT_TOP_K,
-    completed_courses: set[str] | None = None,
 ) -> SkillCourses:
     """
     Collapse objective-level retriever hits into a ranked list of unique
@@ -65,13 +64,11 @@ def aggregate(
  
     for code in top_codes:
         chunk = representative[code]
-        action = _resolve_action(code, completed_courses)
  
         recommendations.append(CourseRecommendation(
             course_number=code,
             title=chunk.title,
             ects=chunk.ects,
-            action=action,
         ))
  
         logger.debug(
@@ -79,7 +76,6 @@ def aggregate(
             code,
             chunk.title,
             best_score[code],
-            f" ({action})" if action else "",
         )
  
     return SkillCourses(skill_gap=skill_gap, courses=recommendations)
@@ -88,7 +84,6 @@ def aggregate_all(
     skill_gaps: list[str],
     hits_per_gap: list[list[tuple[ObjectiveChunk, float]]],
     top_k: int = _DEFAULT_TOP_K,
-    completed_courses: set[str] | None = None,
 ) -> list[SkillCourses]:
     """
     Aggregate retriever results for all skill gaps in one call.
@@ -111,7 +106,7 @@ def aggregate_all(
     results = []
     for skill_gap, hits in zip(skill_gaps, hits_per_gap):
         logger.debug("Aggregating hits for skill gap: %r", skill_gap)
-        result = aggregate(skill_gap, hits, top_k, completed_courses)
+        result = aggregate(skill_gap, hits, top_k)
         results.append(result)
  
     return results

@@ -74,7 +74,6 @@ async def get_courses(
         skill_gaps=gap_labels,
         hits_per_gap=list(hits_per_gap),
         top_k=COURSES_TOP_K,
-        completed_courses=None,  # transcript support to be added later
     )
 
     return CoursesResponse(recommendations=recommendations)
