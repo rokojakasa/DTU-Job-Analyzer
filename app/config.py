@@ -6,7 +6,7 @@ load_dotenv(os.path.expanduser("~/.env"))
 CAMPUSAI_API_KEY = os.getenv("CAMPUSAI_API_KEY")
 CAMPUSAI_URL = os.getenv("CAMPUSAI_API_URL")
 EMBED_MODEL = os.getenv("CAMPUSAI_EMBED_MODEL", "Nomic Embed Text")
-CHAT_MODEL = os.getenv("CAMPUSAI_MODEL", "Gemma 4")
+CHAT_MODEL = os.getenv("CAMPUSAI_MODEL", "google/gemma-4-26b-a4b")
 
 ESCO_PATH = Path("docs/Nielsen2025Natural-2026-03-20.pdf.tei.xml")
 DTU_COURSES_PATH = Path("data/dtu_courses.jsonl")

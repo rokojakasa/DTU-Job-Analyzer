@@ -36,22 +36,38 @@ class JobPostingUploadResponse(BaseModel):
     character_count: int
 
 
+# ── Job Intent (internal, Pass 1 output) ─────────────────────────────────────
+
+class JobRequirements(BaseModel):
+    job_title_inferred: str
+    required_skills: list[str]
+    bonus_skills: list[str]
+
+
 # ── Analysis ──────────────────────────────────────────────────────────────────
+
 class EvidenceType(str, Enum):
     EXPLICIT = "explicit"
     IMPLICIT = "implicit"
     BARE_CLAIM = "bare_claim"
 
+
+class SkillCategory(str, Enum):
+    REQUIRED = "required"
+    BONUS = "bonus"
+
+
 class CoveredSkill(BaseModel):
-    label: str                    # canonical, general form
-    job_posting_label: str        # as phrased in the job posting  
+    label: str
+    job_posting_label: str
     evidence_from_cv: str
     evidence_type: EvidenceType
 
-class SkillGap(BaseModel):
-    label: str                    # canonical form — used for course matching
-    job_posting_label: str        # kept for readable feedback
 
+class SkillGap(BaseModel):
+    label: str
+    job_posting_label: str
+    category: SkillCategory
 
 class AnalysisResponse(BaseModel):
     job_title_inferred: str

@@ -5,7 +5,7 @@ def test_api():
     client = OpenAI(api_key=CAMPUSAI_API_KEY, base_url=CAMPUSAI_URL)
     prompt = "What is the capital of France?"
     response = client.chat.completions.create(
-        model="Gemma 4",
+        model="google/gemma-4-26b-a4b",
         messages=[
             {"role": "user", "content": prompt}
         ]
