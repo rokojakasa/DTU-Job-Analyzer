@@ -29,7 +29,7 @@ async def upload_cv_text(
     text = text.strip()
     if not text:
         raise HTTPException(
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             detail="CV text is empty.",
         )
     store.set_cv(text)

@@ -23,6 +23,8 @@ from fastapi import FastAPI
 
 from app.store import Store
 from app.services.courses.index import ObjectiveChunk
+from app.main import create_app
+from app.models import AnalysisResponse, CoveredSkill, SkillGap, SkillCategory, EvidenceType
 
 
 # ---------------------------------------------------------------------------
@@ -89,36 +91,29 @@ def sample_job_posting() -> str:
     """.strip()
 
 
+
+
 @pytest.fixture
 def sample_analysis_result():
-    """A pre-built AnalysisResult so tests don't need to call the LLM."""
-    from app.store import AnalysisResult
-    return AnalysisResult(
+    return AnalysisResponse(
         job_title_inferred="Machine Learning Engineer",
         covered_skills=[
-            {
-                "label": "apply machine learning",
-                "job_posting_label": "machine learning frameworks",
-                "evidence_from_cv": "Random forest classifier at Acme Corp.",
-                "evidence_type": "explicit",
-                "category": "required",
-            },
-            {
-                "label": "manage relational databases",
-                "job_posting_label": "SQL and relational databases",
-                "evidence_from_cv": "PostgreSQL in FastAPI project.",
-                "evidence_type": "explicit",
-                "category": "required",
-            },
+            CoveredSkill(
+                label="apply machine learning",
+                job_posting_label="machine learning frameworks",
+                evidence_from_cv="Random forest classifier at Acme Corp.",
+                evidence_type=EvidenceType.EXPLICIT,
+                category=SkillCategory.REQUIRED,
+            ),
         ],
         skill_gaps=[
-            {
-                "label": "track machine learning experiments",
-                "job_posting_label": "MLflow or similar experiment tracking",
-                "category": "bonus",
-            }
+            SkillGap(
+                label="track machine learning experiments",
+                job_posting_label="MLflow or similar experiment tracking",
+                category=SkillCategory.BONUS,
+            )
         ],
-        summary="CV covers 4 of 5 required skills. Main gap is experiment tracking.",
+        summary="CV covers 4 of 5 required skills.",
     )
 
 
@@ -172,37 +167,25 @@ def sample_matrix(sample_chunks) -> np.ndarray:
 # App fixture — overrides lifespan so no real API calls at startup
 # ---------------------------------------------------------------------------
 
+@asynccontextmanager
+async def test_lifespan(app):
+    app.state.store = Store()
+    app.state.course_chunks = []
+    app.state.course_matrix = np.empty((0, 768), dtype=np.float32)
+    yield
+
 @pytest.fixture
-def app_with_state(sample_chunks, sample_matrix) -> FastAPI:
-    """
-    A FastAPI app with a lightweight test lifespan injected at construction
-    time. This avoids calling build_index() (which hits the embedding API)
-    and instead populates app.state with pre-built fixtures.
-
-    We pass the lifespan into create_app() rather than replacing it after
-    construction — FastAPI bakes the lifespan in at __init__ time, so
-    post-hoc replacement via router.lifespan_context is not reliable.
-    """
-    from app.main import create_app
-
-    @asynccontextmanager
-    async def test_lifespan(app: FastAPI):
-        app.state.store = Store()
-        app.state.course_chunks = sample_chunks
-        app.state.course_matrix = sample_matrix
-        yield
-
+def app():
     return create_app(lifespan=test_lifespan)
 
-
 @pytest.fixture
-async def client(app_with_state) -> AsyncClient:
-    """Async HTTP client wired to the test app. Used in all route tests."""
+async def client(app):
     async with AsyncClient(
-        transport=ASGITransport(app=app_with_state),
+        transport=ASGITransport(app=app, raise_app_exceptions=True),
         base_url="http://test",
-    ) as ac:
-        yield ac
+    ) as c:
+        async with app.router.lifespan_context(app):
+            yield c
 
 
 # ---------------------------------------------------------------------------

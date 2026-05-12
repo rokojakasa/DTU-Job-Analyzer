@@ -1,6 +1,7 @@
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 
 from app.store import Store
 from app.routes import cv, job_posting, analyse, courses, questions
@@ -37,3 +38,11 @@ def create_app(lifespan=None) -> FastAPI:
 
 
 app = create_app()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

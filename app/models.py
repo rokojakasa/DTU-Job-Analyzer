@@ -17,19 +17,6 @@ class CVUploadResponse(BaseModel):
 
 # ── Job Posting ───────────────────────────────────────────────────────────────
 
-class JobPostingRequest(BaseModel):
-    text: Optional[str] = None
-    url: Optional[HttpUrl] = None
-
-    @model_validator(mode="after")
-    def exactly_one_source(self) -> "JobPostingRequest":
-        if not self.text and not self.url:
-            raise ValueError("Provide either 'text' or 'url'.")
-        if self.text and self.url:
-            raise ValueError("Provide either 'text' or 'url', not both.")
-        return self
-
-
 class JobPostingUploadResponse(BaseModel):
     message: str
     source: str
