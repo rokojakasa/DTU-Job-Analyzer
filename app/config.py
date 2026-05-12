@@ -10,7 +10,7 @@ CHAT_MODEL = os.getenv("CAMPUSAI_MODEL", "google/gemma-4-26b-a4b")
 
 ESCO_PATH = Path("docs/Nielsen2025Natural-2026-03-20.pdf.tei.xml")
 DTU_COURSES_PATH = Path("data/dtu_courses.jsonl")
-COURSES_TOP_K: int = 5
+COURSES_TOP_K: int = 3
 
 def configure_dspy():
     import dspy

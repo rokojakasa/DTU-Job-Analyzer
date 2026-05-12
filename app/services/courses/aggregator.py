@@ -53,6 +53,7 @@ def aggregate(
         code = chunk.course_code
         if score > best_score[code]:
             best_score[code] = score
+        if code not in representative:  # always capture metadata on first sight
             representative[code] = chunk
  
     # --- Step 2: rank courses by their best score ---

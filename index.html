@@ -5,472 +5,1097 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>DTU Job Analyzer</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body { font-family: 'Inter', sans-serif; font-size: 14px; background: #f5f4f0; color: #1a1a1a; min-height: 100vh; }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-  .shell { display: flex; min-height: 100vh; }
+  :root {
+    --red: #C0392B;
+    --red-light: #FDECEA;
+    --red-mid: #E74C3C;
+    --navy: #1a1f36;
+    --navy-mid: #2d3561;
+    --teal: #0D7377;
+    --teal-light: #E8F6F6;
+    --teal-mid: #14A085;
+    --amber: #D4860A;
+    --amber-light: #FDF6E3;
+    --green: #1A7A4A;
+    --green-light: #E8F5EE;
+    --gray-50: #F7F7F8;
+    --gray-100: #EBEBED;
+    --gray-200: #D1D1D6;
+    --gray-400: #8E8E9A;
+    --gray-600: #4A4A55;
+    --gray-900: #1A1A22;
+    --font-display: 'DM Serif Display', Georgia, serif;
+    --font-body: 'DM Sans', system-ui, sans-serif;
+    --font-mono: 'DM Mono', monospace;
+    --radius: 8px;
+    --radius-lg: 14px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 16px rgba(0,0,0,0.04);
+  }
 
-  /* Sidebar */
-  .sidebar { width: 220px; min-width: 220px; background: #fff; border-right: 1px solid #e5e3dc; display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh; }
-  .logo { padding: 1.25rem 1rem 1rem; border-bottom: 1px solid #e5e3dc; }
-  .logo-name { font-size: 13px; font-weight: 500; }
-  .logo-sub { font-size: 11px; color: #999; margin-top: 1px; }
-  .nav { padding: 0.75rem; flex: 1; }
-  .nav-section { font-size: 10px; color: #bbb; text-transform: uppercase; letter-spacing: 0.07em; padding: 8px 8px 4px; }
-  .nav-item { display: flex; align-items: center; gap: 8px; padding: 7px 8px; border-radius: 6px; cursor: pointer; color: #666; font-size: 13px; transition: all 0.12s; user-select: none; }
-  .nav-item:hover { background: #f5f4f0; color: #1a1a1a; }
-  .nav-item.active { background: #f0efe9; color: #1a1a1a; font-weight: 500; }
-  .nav-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
-  .nav-item.done .nav-dot, .nav-item.active .nav-dot { background: #2e9e6b; }
-  .nav-badge { font-size: 10px; margin-left: auto; padding: 1px 6px; border-radius: 3px; }
-  .nb-done { background: #e6f5ee; color: #2e9e6b; }
-  .nb-active { background: #e8f0fb; color: #3a7bd5; }
-  .sidebar-footer { padding: 0.75rem 1rem; border-top: 1px solid #e5e3dc; font-size: 11px; color: #bbb; display: flex; align-items: center; gap: 6px; }
-  .api-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; flex-shrink: 0; }
-  .api-dot.online { background: #2e9e6b; }
+  body {
+    font-family: var(--font-body);
+    background: var(--gray-50);
+    color: var(--gray-900);
+    min-height: 100vh;
+    font-size: 15px;
+    line-height: 1.6;
+  }
 
-  /* Main */
-  .main { flex: 1; padding: 2rem; max-width: 800px; }
-  .panel { display: none; }
-  .panel.active { display: block; animation: fadein 0.15s ease; }
-  @keyframes fadein { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: none; } }
-  .panel-title { font-size: 18px; font-weight: 500; margin-bottom: 4px; }
-  .panel-sub { font-size: 13px; color: #888; margin-bottom: 1.5rem; }
-  .panel-sub code { font-size: 11px; background: #f0efe9; color: #555; padding: 1px 5px; border-radius: 3px; font-family: monospace; }
+  /* ── Header ── */
+  header {
+    background: var(--navy);
+    padding: 0 2rem;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    height: 60px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo-mark {
+    width: 32px; height: 32px;
+    background: var(--red);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-display);
+    color: #fff;
+    font-size: 18px;
+    flex-shrink: 0;
+    letter-spacing: -1px;
+  }
+  header h1 {
+    font-family: var(--font-body);
+    font-weight: 500;
+    font-size: 15px;
+    color: #fff;
+    letter-spacing: 0.01em;
+  }
+  header span {
+    font-weight: 300;
+    opacity: 0.55;
+  }
+  .api-status {
+    margin-left: auto;
+    font-size: 12px;
+    font-family: var(--font-mono);
+    color: rgba(255,255,255,0.4);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .status-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+    background: var(--gray-400);
+    transition: background 0.3s;
+  }
+  .status-dot.online { background: #27AE60; }
+  .status-dot.offline { background: var(--red); }
 
-  /* Cards */
-  .card { background: #fff; border: 1px solid #e5e3dc; border-radius: 10px; padding: 1rem 1.25rem; }
-  .card-label { font-size: 11px; color: #999; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 6px; }
-  .status-dot { width: 6px; height: 6px; border-radius: 50%; background: #ddd; }
-  .status-dot.ok { background: #2e9e6b; }
+  /* ── Layout ── */
+  .layout {
+    max-width: 1140px;
+    margin: 0 auto;
+    padding: 2rem 1.5rem;
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
 
-  /* Upload */
-  .upload-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
-  .drop-zone { border: 1px dashed #ccc; border-radius: 6px; padding: 1rem; text-align: center; cursor: pointer; color: #aaa; font-size: 12px; margin-bottom: 8px; transition: all 0.12s; }
-  .drop-zone:hover, .drop-zone.drag { border-color: #2e9e6b; color: #2e9e6b; background: #f0faf5; }
-  .file-label { font-size: 11px; color: #2e9e6b; margin-bottom: 6px; min-height: 15px; }
-  .or-line { text-align: center; font-size: 11px; color: #bbb; margin: 6px 0; }
-  textarea { width: 100%; border: 1px solid #e5e3dc; border-radius: 6px; padding: 8px 10px; font-size: 12px; font-family: inherit; color: #1a1a1a; background: #fafaf8; resize: vertical; min-height: 80px; outline: none; transition: border-color 0.12s; }
-  textarea:focus { border-color: #bbb; }
-  textarea::placeholder { color: #bbb; }
-  input[type=file] { display: none; }
+  /* ── Panels ── */
+  .panel {
+    background: #fff;
+    border-radius: var(--radius-lg);
+    border: 1px solid var(--gray-100);
+    box-shadow: var(--shadow);
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+  }
+  .panel-header h2 {
+    font-size: 13px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-600);
+  }
+  .step-badge {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--navy);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 500;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .panel-body { padding: 1.25rem; }
 
-  /* Buttons */
-  .btn { display: inline-flex; align-items: center; gap: 6px; padding: 7px 14px; border-radius: 6px; border: 1px solid #d5d3cc; background: #fff; color: #333; font-size: 13px; font-family: inherit; cursor: pointer; transition: all 0.12s; }
-  .btn:hover { background: #f5f4f0; border-color: #bbb; }
+  /* ── Form elements ── */
+  label {
+    display: block;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--gray-600);
+    margin-bottom: 5px;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  textarea {
+    width: 100%;
+    border: 1px solid var(--gray-200);
+    border-radius: var(--radius);
+    padding: 0.7rem 0.85rem;
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--gray-900);
+    background: var(--gray-50);
+    resize: vertical;
+    transition: border-color 0.15s, background 0.15s;
+    line-height: 1.55;
+  }
+  textarea:focus { outline: none; border-color: var(--teal); background: #fff; }
+  textarea::placeholder { color: var(--gray-400); }
+
+  .or-divider {
+    display: flex; align-items: center; gap: 0.75rem;
+    margin: 0.75rem 0;
+    font-size: 11px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+  .or-divider::before, .or-divider::after {
+    content: ''; flex: 1;
+    height: 1px; background: var(--gray-100);
+  }
+
+  .file-drop {
+    border: 1.5px dashed var(--gray-200);
+    border-radius: var(--radius);
+    padding: 1rem;
+    text-align: center;
+    font-size: 13px;
+    color: var(--gray-400);
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    position: relative;
+  }
+  .file-drop:hover { border-color: var(--teal); background: var(--teal-light); color: var(--teal); }
+  .file-drop input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer;
+  }
+  .file-drop svg { display: block; margin: 0 auto 6px; }
+
+  .field-gap { margin-top: 1rem; }
+
+  /* ── Buttons ── */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 0.55rem 1.1rem;
+    border-radius: var(--radius);
+    font-family: var(--font-body);
+    font-size: 14px;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+    transition: opacity 0.15s, transform 0.1s;
+    white-space: nowrap;
+  }
   .btn:active { transform: scale(0.98); }
-  .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
-  .btn-primary { background: #f0faf5; border-color: #2e9e6b; color: #1e7a52; }
-  .btn-primary:hover { background: #e0f5ea; }
-  .btn-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 1rem; }
-  .btn-hint { font-size: 11px; color: #aaa; }
-  .spinner { width: 12px; height: 12px; border: 2px solid #ccc; border-top-color: #2e9e6b; border-radius: 50%; animation: spin 0.7s linear infinite; }
+  .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+  .btn-primary {
+    background: var(--navy);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    padding: 0.7rem;
+    font-size: 14px;
+  }
+  .btn-primary:hover:not(:disabled) { background: var(--navy-mid); }
+  .btn-accent {
+    background: var(--red);
+    color: #fff;
+    width: 100%;
+    justify-content: center;
+    padding: 0.75rem;
+    font-size: 15px;
+    border-radius: var(--radius);
+    letter-spacing: 0.01em;
+  }
+  .btn-accent:hover:not(:disabled) { background: var(--red-mid); }
+  .btn-sm {
+    padding: 0.35rem 0.75rem;
+    font-size: 13px;
+    background: var(--gray-50);
+    color: var(--gray-600);
+    border: 1px solid var(--gray-200);
+  }
+  .btn-sm:hover { background: var(--gray-100); }
+  .btn-teal {
+    background: var(--teal);
+    color: #fff;
+  }
+  .btn-teal:hover:not(:disabled) { background: var(--teal-mid); }
+
+  /* ── Upload status chips ── */
+  .upload-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 12px;
+    padding: 3px 10px;
+    border-radius: 99px;
+    margin-left: auto;
+    font-weight: 500;
+  }
+  .chip-ok { background: var(--green-light); color: var(--green); }
+  .chip-no { background: var(--gray-100); color: var(--gray-400); }
+
+  /* ── Right column ── */
+  .results-col { display: flex; flex-direction: column; gap: 1.5rem; }
+
+  /* ── Section cards in results ── */
+  .result-section { animation: fadeUp 0.3s ease; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 22px;
+    color: var(--navy);
+    margin-bottom: 1rem;
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .section-title small {
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--gray-400);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  /* ── Analysis ── */
+  .summary-box {
+    background: var(--navy);
+    color: rgba(255,255,255,0.9);
+    border-radius: var(--radius);
+    padding: 1rem 1.25rem;
+    font-size: 14px;
+    line-height: 1.65;
+    margin-bottom: 1.25rem;
+    font-style: italic;
+  }
+  .summary-box strong { color: #fff; font-style: normal; }
+
+  .skills-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  .skills-col h3 {
+    font-size: 11px;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--gray-400);
+    margin-bottom: 0.6rem;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--gray-100);
+  }
+  .skill-item {
+    padding: 0.55rem 0.75rem;
+    border-radius: var(--radius);
+    margin-bottom: 6px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .skill-item .skill-label { font-weight: 500; margin-bottom: 2px; }
+  .skill-item .skill-evidence { font-size: 12px; color: var(--gray-400); }
+  .skill-item .skill-badge {
+    display: inline-block;
+    font-size: 10px;
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 500;
+    margin-left: 5px;
+    vertical-align: middle;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .skill-covered { background: var(--green-light); border-left: 3px solid var(--green); }
+  .skill-covered .skill-label { color: var(--green); }
+  .badge-explicit { background: #D5F5E3; color: #1A6635; }
+  .badge-implicit { background: #D6EAF8; color: #1A5276; }
+  .badge-bare_claim { background: var(--amber-light); color: var(--amber); }
+
+  .skill-gap-item { background: var(--red-light); border-left: 3px solid var(--red); }
+  .skill-gap-item .skill-label { color: var(--red); }
+  .badge-required { background: #FADBD8; color: #922B21; }
+  .badge-bonus { background: #FDEBD0; color: #935116; }
+
+  /* ── Courses ── */
+  .gap-block { margin-bottom: 1.25rem; }
+  .gap-block-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-900);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .gap-block-title::before {
+    content: '';
+    display: inline-block;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--red);
+    flex-shrink: 0;
+  }
+  .course-card {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.6rem 0.85rem;
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius);
+    margin-bottom: 5px;
+    background: #fff;
+    transition: border-color 0.15s;
+  }
+  .course-card:hover { border-color: var(--teal); }
+  .course-code {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--teal);
+    font-weight: 500;
+    margin-bottom: 1px;
+  }
+  .course-title { font-size: 13px; font-weight: 500; color: var(--gray-900); }
+  .ects-badge {
+    font-size: 11px;
+    font-weight: 500;
+    background: var(--teal-light);
+    color: var(--teal);
+    padding: 2px 8px;
+    border-radius: 99px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  /* ── Questions ── */
+  .question-card {
+    border: 1px solid var(--gray-100);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    margin-bottom: 1rem;
+    background: #fff;
+  }
+  .question-header {
+    padding: 0.75rem 1rem;
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-100);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .q-skill-tag {
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--navy-mid);
+    background: #E8EAF6;
+    padding: 2px 9px;
+    border-radius: 4px;
+    font-family: var(--font-mono);
+  }
+  .question-body { padding: 1rem; }
+  .question-text {
+    font-family: var(--font-display);
+    font-size: 17px;
+    color: var(--navy);
+    margin-bottom: 0.6rem;
+    line-height: 1.45;
+  }
+  .follow-up {
+    font-size: 13px;
+    color: var(--gray-600);
+    padding: 0.5rem 0.75rem;
+    background: var(--gray-50);
+    border-radius: var(--radius);
+    border-left: 2px solid var(--gray-200);
+    margin-bottom: 0.6rem;
+  }
+  .follow-up::before { content: 'Follow-up — '; font-weight: 500; color: var(--gray-400); }
+  .cv-anchor {
+    font-size: 12px;
+    color: var(--teal);
+    font-style: italic;
+    display: flex;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  .cv-anchor svg { flex-shrink: 0; margin-top: 2px; }
+
+  /* ── Loading state ── */
+  .loading-ring {
+    width: 20px; height: 20px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+    display: inline-block;
+  }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* Alerts */
-  .alert { padding: 9px 13px; border-radius: 6px; font-size: 13px; margin-bottom: 1rem; }
-  .alert-error { background: #fdf0f0; border: 1px solid #f0bcbc; color: #b94040; }
-  .alert-success { background: #f0faf5; border: 1px solid #9edfc0; color: #1e7a52; }
+  /* ── Error/empty states ── */
+  .empty-state {
+    text-align: center;
+    padding: 3rem 1rem;
+    color: var(--gray-400);
+  }
+  .empty-state svg { margin: 0 auto 1rem; display: block; }
+  .empty-state p { font-size: 14px; }
 
-  /* Analysis */
-  .coverage-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4px; }
-  .coverage-score { font-size: 22px; font-weight: 500; }
-  .coverage-note { font-size: 12px; color: #999; }
-  .coverage-bar-wrap { height: 6px; background: #f0efe9; border-radius: 99px; overflow: hidden; margin-bottom: 1rem; }
-  .coverage-bar { height: 100%; background: #2e9e6b; border-radius: 99px; transition: width 0.5s ease; }
-  .summary-box { background: #fafaf8; border-left: 2px solid #2e9e6b; border-radius: 0 6px 6px 0; padding: 9px 13px; font-size: 13px; color: #555; line-height: 1.6; margin-bottom: 1.25rem; }
+  .error-msg {
+    background: var(--red-light);
+    color: #922B21;
+    border-radius: var(--radius);
+    padding: 0.75rem 1rem;
+    font-size: 13px;
+    margin-top: 0.75rem;
+    border-left: 3px solid var(--red);
+  }
 
-  /* Tabs */
-  .tabs { display: flex; border-bottom: 1px solid #e5e3dc; margin-bottom: 1rem; }
-  .tab { font-size: 12px; padding: 7px 12px; cursor: pointer; color: #999; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: all 0.12s; user-select: none; }
-  .tab:hover { color: #333; }
-  .tab.active { color: #1a1a1a; font-weight: 500; border-bottom-color: #1a1a1a; }
+  /* ── Tabs ── */
+  .tabs {
+    display: flex;
+    gap: 3px;
+    background: var(--gray-100);
+    border-radius: var(--radius);
+    padding: 3px;
+    margin-bottom: 1.25rem;
+  }
+  .tab {
+    flex: 1;
+    padding: 0.45rem;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-400);
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.15s;
+    border: none;
+    background: none;
+    font-family: var(--font-body);
+  }
+  .tab.active { background: #fff; color: var(--navy); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
 
-  /* Chips */
-  .section-label { font-size: 11px; color: #aaa; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 6px; margin-top: 0.75rem; }
-  .chips { display: flex; flex-wrap: wrap; gap: 5px; }
-  .chip { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; padding: 3px 9px; border-radius: 99px; border: 1px solid; }
-  .chip-ok { background: #f0faf5; border-color: #9edfc0; color: #1e7a52; }
-  .chip-gap { background: #fdf0f0; border-color: #f0bcbc; color: #b94040; }
-  .chip-bonus-ok { background: #fdf7ec; border-color: #f0d99a; color: #8a6010; }
-  .chip-bonus-gap { background: #fafaf8; border-color: #ddd; color: #888; }
-  .ev-label { font-size: 10px; opacity: 0.7; border-left: 1px solid currentColor; padding-left: 4px; margin-left: 2px; }
+  /* ── Example banner ── */
+  .example-banner {
+    background: var(--amber-light);
+    border: 1px solid #F0C060;
+    border-radius: var(--radius);
+    padding: 0.65rem 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-size: 13px;
+    color: var(--amber);
+  }
+  .example-banner span { flex: 1; line-height: 1.4; }
+  .btn-example {
+    background: var(--amber);
+    color: #fff;
+    border: none;
+    border-radius: var(--radius);
+    padding: 0.4rem 0.85rem;
+    font-size: 13px;
+    font-weight: 500;
+    font-family: var(--font-body);
+    cursor: pointer;
+    white-space: nowrap;
+    flex-shrink: 0;
+    transition: opacity 0.15s;
+  }
+  .btn-example:hover { opacity: 0.85; }
 
-  /* Courses */
-  .gap-block { margin-bottom: 1.25rem; }
-  .gap-title { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 13px; font-weight: 500; }
-  .gap-tag { font-size: 10px; background: #fdf0f0; color: #b94040; border: 1px solid #f0bcbc; padding: 1px 6px; border-radius: 3px; }
-  .course-table { background: #fff; border: 1px solid #e5e3dc; border-radius: 8px; overflow: hidden; }
-  .course-row { display: grid; grid-template-columns: 56px 1fr 54px 110px; gap: 10px; align-items: center; padding: 9px 14px; border-bottom: 1px solid #f0efe9; font-size: 13px; }
-  .course-row:last-child { border-bottom: none; }
-  .course-num { font-size: 11px; color: #3a7bd5; font-family: monospace; font-weight: 500; }
-  .course-ects { font-size: 11px; color: #aaa; }
-  .action-badge { font-size: 10px; padding: 2px 7px; border-radius: 3px; text-align: center; }
-  .action-add { background: #f0faf5; color: #1e7a52; border: 1px solid #9edfc0; }
-  .action-take { background: #e8f0fb; color: #3a7bd5; border: 1px solid #aac4f0; }
-  .action-none { background: #f5f4f0; color: #bbb; border: 1px solid #e5e3dc; }
+  /* ── Toaster ── */
+  #toast {
+    position: fixed;
+    bottom: 1.5rem;
+    left: 50%;
+    transform: translateX(-50%) translateY(6px);
+    background: var(--navy);
+    color: #fff;
+    font-size: 13px;
+    padding: 0.6rem 1.25rem;
+    border-radius: 99px;
+    opacity: 0;
+    transition: opacity 0.2s, transform 0.2s;
+    pointer-events: none;
+    z-index: 999;
+    white-space: nowrap;
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
-  /* Questions */
-  .q-block { background: #fff; border: 1px solid #e5e3dc; border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
-  .q-skill { font-size: 11px; color: #3a7bd5; margin-bottom: 6px; font-family: monospace; }
-  .q-main { font-size: 13px; color: #1a1a1a; line-height: 1.6; margin-bottom: 6px; }
-  .q-follow { font-size: 12px; color: #888; border-left: 2px solid #e5e3dc; padding-left: 10px; margin-bottom: 6px; }
-  .q-anchor { font-size: 11px; color: #aaa; background: #fafaf8; padding: 5px 9px; border-radius: 4px; font-family: monospace; }
-
-  /* Transcript strip */
-  .transcript-strip { background: #fff; border: 1px solid #e5e3dc; border-radius: 8px; padding: 0.875rem 1.25rem; margin-bottom: 1.25rem; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .transcript-info { font-size: 12px; color: #888; }
-  .transcript-info strong { color: #333; font-weight: 500; }
-
-  /* Empty */
-  .empty { text-align: center; padding: 3rem 1rem; color: #bbb; }
-  .empty p { font-size: 13px; }
+  @media (max-width: 800px) {
+    .layout { grid-template-columns: 1fr; }
+    .skills-grid { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
-<div class="shell">
 
-  <aside class="sidebar">
-    <div class="logo">
-      <div class="logo-name">DTU Job Analyzer</div>
-      <div class="logo-sub">Skill gap tool</div>
+<header>
+  <div class="logo-mark">D</div>
+  <h1>DTU Job Analyzer <span>/ skill gap analysis for students</span></h1>
+  <div class="api-status">
+    <div class="status-dot" id="statusDot"></div>
+    <span id="statusText">checking api…</span>
+  </div>
+</header>
+
+<div class="layout">
+
+  <!-- ── Left column: inputs ── -->
+  <div style="display: flex; flex-direction: column; gap: 1rem;">
+
+    <!-- Example data banner -->
+    <div class="example-banner">
+      <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24" aria-hidden="true" style="flex-shrink:0"><path d="M13 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9z"/><polyline points="13 2 13 9 20 9"/></svg>
+      <span>No CV or job posting handy? Try the built-in example data.</span>
+      <button class="btn-example" onclick="loadExamples()">Load examples</button>
     </div>
-    <nav class="nav">
-      <div class="nav-section">Setup</div>
-      <div class="nav-item active" id="nav-upload" onclick="navigate('upload')">
-        <div class="nav-dot"></div>
-        <span>Upload</span>
-        <span class="nav-badge nb-active" id="badge-upload">step 1</span>
+
+    <!-- CV panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="step-badge">1</div>
+        <h2>Your CV</h2>
+        <div class="upload-chip chip-no" id="cvChip">not uploaded</div>
       </div>
-      <div class="nav-section" style="margin-top:8px">Results</div>
-      <div class="nav-item" id="nav-analyse" onclick="navigate('analyse')">
-        <div class="nav-dot"></div>
-        <span>Analysis</span>
-        <span class="nav-badge" id="badge-analyse" style="display:none"></span>
+      <div class="panel-body">
+        <label>paste plain text</label>
+        <textarea id="cvText" rows="7" placeholder="John Doe&#10;MSc Computer Science, DTU&#10;&#10;Experience: ..."></textarea>
+        <div class="or-divider">or upload PDF</div>
+        <div class="file-drop" id="cvDropzone">
+          <input type="file" accept=".pdf" id="cvFile">
+          <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24">
+            <path d="M12 16v-8m0 0-3 3m3-3 3 3M20 16.5A3.5 3.5 0 0 0 16.5 13H15a5 5 0 1 0-9.9 1"/>
+          </svg>
+          Drop PDF here or click to browse
+        </div>
+        <div class="field-gap">
+          <button class="btn btn-primary" id="uploadCvBtn" onclick="uploadCV()">Upload CV</button>
+        </div>
+        <div id="cvError"></div>
       </div>
-      <div class="nav-item" id="nav-courses" onclick="navigate('courses')">
-        <div class="nav-dot"></div>
-        <span>Courses</span>
-        <span class="nav-badge" id="badge-courses" style="display:none"></span>
-      </div>
-      <div class="nav-item" id="nav-questions" onclick="navigate('questions')">
-        <div class="nav-dot"></div>
-        <span>Interview prep</span>
-        <span class="nav-badge" id="badge-questions" style="display:none"></span>
-      </div>
-    </nav>
-    <div class="sidebar-footer">
-      <div class="api-dot" id="api-dot"></div>
-      <span id="api-status">checking api…</span>
     </div>
-  </aside>
 
-  <main class="main">
-    <div id="global-alert"></div>
+    <!-- Job posting panel -->
+    <div class="panel">
+      <div class="panel-header">
+        <div class="step-badge">2</div>
+        <h2>Job Posting</h2>
+        <div class="upload-chip chip-no" id="jobChip">not uploaded</div>
+      </div>
+      <div class="panel-body">
+        <label>paste job description</label>
+        <textarea id="jobText" rows="7" placeholder="We are looking for a Machine Learning Engineer…&#10;&#10;Required: Python, SQL, scikit-learn..."></textarea>
+        <div class="field-gap">
+          <button class="btn btn-primary" id="uploadJobBtn" onclick="uploadJob()">Upload Job Posting</button>
+        </div>
+        <div id="jobError"></div>
+      </div>
+    </div>
 
-    <!-- Upload -->
-    <div class="panel active" id="panel-upload">
-      <div class="panel-title">Upload documents</div>
-      <div class="panel-sub">Upload your CV and the job posting, then run analysis.</div>
-      <div id="upload-alert"></div>
-      <div class="upload-grid">
-        <div class="card">
-          <div class="card-label"><div class="status-dot" id="cv-dot"></div> CV</div>
-          <div class="drop-zone" id="cv-drop" onclick="document.getElementById('cv-file').click()"
-            ondragover="dragOver(event,'cv-drop')" ondragleave="dragLeave('cv-drop')" ondrop="dropFile(event,'cv')">
-            Drop PDF or click to browse
+    <!-- Analyse button -->
+    <button class="btn btn-accent" id="analyseBtn" onclick="runAnalysis()" disabled>
+      Run Analysis
+    </button>
+    <div id="analyseError"></div>
+
+  </div>
+
+  <!-- ── Right column: results ── -->
+  <div class="results-col" id="resultsCol">
+
+    <div class="empty-state" id="emptyState">
+      <svg width="56" height="56" fill="none" stroke="var(--gray-200)" stroke-width="1.2" viewBox="0 0 24 24">
+        <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+        <path d="M11 8v6m-3-3h6"/>
+      </svg>
+      <p>Upload your CV and a job posting,<br>then click <strong>Run Analysis</strong>.</p>
+    </div>
+
+    <!-- Results panels (hidden until analysis) -->
+    <div id="resultsContent" style="display:none;">
+
+      <!-- Analysis -->
+      <div class="panel result-section" id="analysisPanel">
+        <div class="panel-header">
+          <h2>Analysis</h2>
+          <span id="jobTitleBadge" style="margin-left:auto; font-size:12px; color:var(--gray-400); font-family:var(--font-mono);"></span>
+        </div>
+        <div class="panel-body">
+          <div class="summary-box" id="analysisSummary"></div>
+          <div class="skills-grid">
+            <div>
+              <h3>Covered skills</h3>
+              <div id="coveredSkillsList"></div>
+            </div>
+            <div>
+              <h3>Skill gaps</h3>
+              <div id="gapSkillsList"></div>
+            </div>
           </div>
-          <input type="file" id="cv-file" accept=".pdf" onchange="fileChosen('cv')">
-          <div class="file-label" id="cv-filename"></div>
-          <div class="or-line">— or paste text —</div>
-          <textarea id="cv-text" placeholder="John Doe. Software engineer with experience in…"></textarea>
-          <div style="margin-top:8px">
-            <button class="btn btn-primary" onclick="uploadCV()">
-              <span class="spinner" id="cv-spin" style="display:none"></span>Upload CV
+          <div style="margin-top:1rem; display:flex; gap:8px;">
+            <button class="btn btn-sm btn-teal" onclick="runCourses()" id="coursesBtn">
+              Get course recommendations →
+            </button>
+            <button class="btn btn-sm btn-teal" onclick="runQuestions()" id="questionsBtn">
+              Generate interview questions →
             </button>
           </div>
         </div>
-        <div class="card">
-          <div class="card-label"><div class="status-dot" id="job-dot"></div> Job posting</div>
-          <textarea id="job-text" placeholder="We are looking for a machine learning engineer…" style="min-height:155px"></textarea>
-          <div style="margin-top:8px">
-            <button class="btn btn-primary" onclick="uploadJob()">
-              <span class="spinner" id="job-spin" style="display:none"></span>Upload job posting
-            </button>
-          </div>
+      </div>
+
+      <!-- Courses -->
+      <div class="panel result-section" id="coursesPanel" style="display:none;">
+        <div class="panel-header">
+          <h2>Course Recommendations</h2>
+          <button class="btn btn-sm" style="margin-left:auto;" onclick="runCourses()">Refresh</button>
+        </div>
+        <div class="panel-body" id="coursesBody">
+          <div class="empty-state"><p>Click "Get course recommendations" above.</p></div>
         </div>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-primary" id="run-btn" onclick="runAnalysis()" disabled>
-          <span class="spinner" id="run-spin" style="display:none"></span>Run analysis
-        </button>
-        <span class="btn-hint">requires both CV and job posting</span>
+
+      <!-- Questions -->
+      <div class="panel result-section" id="questionsPanel" style="display:none;">
+        <div class="panel-header">
+          <h2>Interview Questions</h2>
+          <button class="btn btn-sm" style="margin-left:auto;" onclick="runQuestions()">Refresh</button>
+        </div>
+        <div class="panel-body" id="questionsBody">
+          <div class="empty-state"><p>Click "Generate interview questions" above.</p></div>
+        </div>
       </div>
+
     </div>
 
-    <!-- Analysis -->
-    <div class="panel" id="panel-analyse">
-      <div class="panel-title" id="analyse-title">Skill gap analysis</div>
-      <div class="panel-sub">Endpoint: <code>GET /analyse</code></div>
-      <div id="analyse-content">
-        <div class="empty"><p>Run analysis from the Upload panel.</p></div>
-      </div>
-    </div>
-
-    <!-- Courses -->
-    <div class="panel" id="panel-courses">
-      <div class="panel-title">Course recommendations</div>
-      <div class="panel-sub">Endpoint: <code>POST /courses</code></div>
-      <div id="courses-content">
-        <div class="empty"><p>Run analysis first, then fetch course recommendations.</p></div>
-      </div>
-    </div>
-
-    <!-- Questions -->
-    <div class="panel" id="panel-questions">
-      <div class="panel-title">Interview preparation</div>
-      <div class="panel-sub">Endpoint: <code>GET /questions</code></div>
-      <div id="questions-content">
-        <div class="empty"><p>Run analysis first, then generate interview questions.</p></div>
-      </div>
-    </div>
-  </main>
+  </div>
 </div>
+
+<div id="toast"></div>
 
 <script>
 const API = 'http://localhost:8000';
-const state = { cvUploaded: false, jobUploaded: false };
 
-function navigate(panel) {
-  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-  document.getElementById('panel-' + panel).classList.add('active');
-  document.getElementById('nav-' + panel).classList.add('active');
+let cvUploaded = false;
+let jobUploaded = false;
+let lastAnalysis = null;
+
+// ── Example data ──────────────────────────────────────
+const EXAMPLE_CV = `# Alexander Møller
+**Computer Science, BSc — 2nd Year**
+Technical University of Denmark (DTU)
+
+📧 s214872@student.dtu.dk · 📞 +45 31 45 67 89
+🔗 github.com/alexmoeller · 📍 Copenhagen, Denmark
+
+---
+
+## Education
+
+**BSc Computer Science** — Technical University of Denmark (DTU)
+2023 – present (expected 2026)
+Current GPA: 9.2 / 12
+
+**STX (Upper Secondary School)** — Rysensteen Gymnasium, Copenhagen
+Graduated 2023 — Mathematics A, Physics B, Computer Science B
+
+---
+
+## Relevant Coursework
+
+02002 Computer Programming — 10
+02101 Introductory Programming — 12
+02105 Algorithms and Data Structures 1 — 10
+02402 Introduction to Statistics — 7
+02810 Cognitive Systems — 10
+01005 Mathematics 1 — 7
+01035 Mathematics 3 — 10
+02450 Introduction to Machine Learning and Data Mining — 10
+02461 Artificial Intelligence and Multi-Agent Systems — 7
+
+---
+
+## Projects
+
+**Spotify Listening Habit Analyser** (02450 course project, 2024)
+Analysed 12 months of personal Spotify streaming data using k-means clustering and
+PCA to identify listening patterns across time of day and genre.
+Implemented in Python with scikit-learn and matplotlib. Group project (3 people).
+
+**Pathfinding Visualiser** (personal project, 2023)
+Built a browser-based visualisation tool for A*, Dijkstra, and BFS algorithms.
+Written in vanilla JavaScript with no external libraries. Used to prepare for
+02105 Algorithms and Data Structures.
+
+**Othello AI Agent** (02461 course project, 2024)
+Implemented a minimax agent with alpha-beta pruning for the board game Othello.
+Competed in a class tournament; agent placed 4th out of 28 submissions.
+
+---
+
+## Technical Skills
+
+**Languages:** Python, Java, JavaScript, C (basic)
+**Libraries / Tools:** scikit-learn, numpy, pandas, matplotlib, Git, Linux
+**Concepts:** supervised learning, clustering, search algorithms, basic probability & statistics
+
+---
+
+## Work Experience
+
+**Student Helper — DTU Compute**
+September 2024 – present
+Assist course staff in 02101 Introductory Programming by running weekly exercise
+sessions, answering student questions, and providing feedback on assignments.
+
+---
+
+## Extracurricular
+
+**Member — DTU Coding Pirates** (2023 – present)
+Volunteer teaching basic programming to children aged 8–14 using Scratch and Python.
+
+**Participant — DTU Miniprojekt** (August 2023)
+Week-long group project at study start; built a small web scraper to track
+DTU canteen menus and send daily email summaries.`;
+
+const EXAMPLE_JOB = `Join us in this role where you'll help develop data and statistically driven tools for our trading floor. You'll influence decisions and handle tasks on your own, thereby contributing with your knowledge and expertise. You're expected to be able to work 15 hours weekly.
+
+Welcome to Operations in Bioenergy
+
+You'll be part of Advanced Analytics where you, together with your colleagues, will develop forecasts, analyses, and dashboards which provide our trading floor with a strong basis for data and statistical driven decision making in the daily operation at our Danish power stations, wind turbines, solar PV, electric boilers, heat pumps, and P2X. As a team, we continuously strive to do better and develop our skillset. In our team we have an informal and very open culture and you'll always be able to get help and learn from your colleagues.
+
+You'll play an important role in:
+
+  developing and implementing performance tracking
+  developing dashboards to visualise decision support and performance tracking
+  developing and implementing forecasting models using AI/ML/DL, incl. stochastic modelling and statistical data analysis
+  communicating and collaborating with internal and external stakeholders, i.e., team members, traders, etc.
+
+To succeed in the role, you:
+
+  are currently studying data science, applied mathematics, or another relevant course within analytics and/or engineering
+  have at least two years left before graduating
+  are a strong Python programmer
+  have experience with writing and reviewing maintainable and testable code
+  are familiar with machine-learning concepts (supervised and unsupervised learning) and data analytics
+  possess knowledge of Git, Docker & Kubernetes, or electricity markets - this will seen as a benefit but however not a requirement.
+
+Maybe you've read the above and can see you have some transferable skills, even though they don't quite match all the points. If you think you can bring something to the team, we still encourage you to apply.
+
+Shape the future with us
+
+Send your application and CV to us as soon as possible. We'll be conducting interviews on a continuous basis and reserve the right to take down the advert when we've found the right candidate.`;
+
+function loadExamples() {
+  document.getElementById('cvText').value = EXAMPLE_CV;
+  document.getElementById('jobText').value = EXAMPLE_JOB;
+  toast('Example data loaded — click Upload buttons to send to the API');
 }
 
+// ── API health check ──────────────────────────────────
 async function checkHealth() {
   try {
-    await fetch(API + '/docs', { signal: AbortSignal.timeout(2000) });
-    document.getElementById('api-dot').classList.add('online');
-    document.getElementById('api-status').textContent = 'api online';
+    const r = await fetch(`${API}/docs`, { signal: AbortSignal.timeout(3000) });
+    setStatus(r.ok ? 'online' : 'offline', r.ok ? 'api online' : 'api error');
   } catch {
-    document.getElementById('api-status').textContent = 'api offline';
+    setStatus('offline', 'api offline');
   }
 }
 
-function dragOver(e, id) { e.preventDefault(); document.getElementById(id).classList.add('drag'); }
-function dragLeave(id) { document.getElementById(id).classList.remove('drag'); }
-function dropFile(e, type) {
-  e.preventDefault(); dragLeave(type + '-drop');
-  const file = e.dataTransfer.files[0];
-  if (file && file.type === 'application/pdf') {
-    const dt = new DataTransfer(); dt.items.add(file);
-    document.getElementById(type + '-file').files = dt.files;
-    document.getElementById(type + '-filename').textContent = file.name;
-  }
-}
-function fileChosen(type) {
-  const f = document.getElementById(type + '-file').files[0];
-  if (f) document.getElementById(type + '-filename').textContent = f.name;
-}
-
-async function uploadCV() {
-  const file = document.getElementById('cv-file').files[0];
-  const text = document.getElementById('cv-text').value.trim();
-  if (!file && !text) { showAlert('upload-alert', 'Provide a PDF or paste CV text.', 'error'); return; }
-  spin('cv-spin', true);
-  try {
-    const fd = new FormData();
-    let url;
-    if (file) { fd.append('file', file); url = API + '/cv/pdf'; }
-    else { fd.append('text', text); url = API + '/cv/text'; }
-    const res = await fetch(url, { method: 'POST', body: fd });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Upload failed');
-    state.cvUploaded = true;
-    document.getElementById('cv-dot').classList.add('ok');
-    showAlert('upload-alert', 'CV uploaded.', 'success');
-    updateRunBtn();
-  } catch (e) { showAlert('upload-alert', 'CV upload failed: ' + e.message, 'error'); }
-  finally { spin('cv-spin', false); }
-}
-
-async function uploadJob() {
-  const text = document.getElementById('job-text').value.trim();
-  if (!text) { showAlert('upload-alert', 'Paste the job posting text.', 'error'); return; }
-  spin('job-spin', true);
-  try {
-    const fd = new FormData(); fd.append('text', text);
-    const res = await fetch(API + '/job-posting/text', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Upload failed');
-    state.jobUploaded = true;
-    document.getElementById('job-dot').classList.add('ok');
-    showAlert('upload-alert', 'Job posting uploaded.', 'success');
-    updateRunBtn();
-  } catch (e) { showAlert('upload-alert', 'Job upload failed: ' + e.message, 'error'); }
-  finally { spin('job-spin', false); }
-}
-
-async function runAnalysis() {
-  spin('run-spin', true);
-  document.getElementById('run-btn').disabled = true;
-  try {
-    const res = await fetch(API + '/analyse');
-    if (!res.ok) throw new Error((await res.json()).detail || 'Analysis failed');
-    const data = await res.json();
-    renderAnalysis(data);
-    markDone('analyse');
-    navigate('analyse');
-  } catch (e) {
-    showAlert('upload-alert', 'Analysis failed: ' + e.message, 'error');
-    document.getElementById('run-btn').disabled = false;
-  } finally { spin('run-spin', false); }
-}
-
-function renderAnalysis(data) {
-  document.getElementById('analyse-title').textContent = data.job_title_inferred || 'Skill gap analysis';
-  const covered = data.covered_skills || [], gaps = data.skill_gaps || [];
-  const total = covered.length + gaps.length;
-  const pct = total ? Math.round(covered.length / total * 100) : 0;
-
-  const reqC = covered.filter(s => s.category === 'required');
-  const reqG = gaps.filter(s => s.category === 'required');
-  const bonC = covered.filter(s => s.category === 'bonus');
-  const bonG = gaps.filter(s => s.category === 'bonus');
-
-  const chip = (s, cls) =>
-    `<span class="chip ${cls}">${s.label}${s.evidence_type ? `<span class="ev-label">${s.evidence_type}</span>` : ''}</span>`;
-
-  document.getElementById('analyse-content').innerHTML = `
-    <div class="card" style="margin-bottom:1rem">
-      <div class="coverage-row">
-        <span class="coverage-score">${pct}%</span>
-        <span class="coverage-note">${covered.length} of ${total} skills covered</span>
-      </div>
-      <div class="coverage-bar-wrap"><div class="coverage-bar" style="width:${pct}%"></div></div>
-      <div class="summary-box">${data.summary || ''}</div>
-      <div class="tabs">
-        <div class="tab active" id="tab-all" onclick="skillTab('all')">All</div>
-        <div class="tab" id="tab-gaps" onclick="skillTab('gaps')">Gaps only</div>
-        <div class="tab" id="tab-covered" onclick="skillTab('covered')">Covered</div>
-      </div>
-      <div id="view-all">
-        ${reqC.length||reqG.length ? `<div class="section-label">Required</div><div class="chips">${reqC.map(s=>chip(s,'chip-ok')).join('')}${reqG.map(s=>chip(s,'chip-gap')).join('')}</div>` : ''}
-        ${bonC.length||bonG.length ? `<div class="section-label">Bonus</div><div class="chips">${bonC.map(s=>chip(s,'chip-bonus-ok')).join('')}${bonG.map(s=>chip(s,'chip-bonus-gap')).join('')}</div>` : ''}
-      </div>
-      <div id="view-gaps" style="display:none">
-        ${reqG.length ? `<div class="section-label">Required gaps</div><div class="chips">${reqG.map(s=>chip(s,'chip-gap')).join('')}</div>` : ''}
-        ${bonG.length ? `<div class="section-label">Bonus gaps</div><div class="chips">${bonG.map(s=>chip(s,'chip-bonus-gap')).join('')}</div>` : ''}
-        ${!reqG.length&&!bonG.length ? '<p style="color:#aaa;font-size:13px">No gaps found.</p>' : ''}
-      </div>
-      <div id="view-covered" style="display:none">
-        ${reqC.length ? `<div class="section-label">Required covered</div><div class="chips">${reqC.map(s=>chip(s,'chip-ok')).join('')}</div>` : ''}
-        ${bonC.length ? `<div class="section-label">Bonus covered</div><div class="chips">${bonC.map(s=>chip(s,'chip-bonus-ok')).join('')}</div>` : ''}
-      </div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-primary" onclick="fetchCourses()">
-        <span class="spinner" id="courses-spin" style="display:none"></span>Get course recommendations
-      </button>
-      <button class="btn" onclick="fetchQuestions()">
-        <span class="spinner" id="questions-spin" style="display:none"></span>Generate interview questions
-      </button>
-    </div>`;
-}
-
-function skillTab(tab) {
-  ['all','gaps','covered'].forEach(t => {
-    document.getElementById('tab-'+t).classList.toggle('active', t===tab);
-    document.getElementById('view-'+t).style.display = t===tab ? '' : 'none';
-  });
-}
-
-async function fetchCourses() {
-  spin('courses-spin', true);
-  const transcriptInput = document.getElementById('transcript-file');
-  const transcript = transcriptInput ? transcriptInput.files[0] : null;
-  try {
-    const fd = new FormData();
-    if (transcript) fd.append('transcript_file', transcript);
-    const res = await fetch(API + '/courses/', { method: 'POST', body: fd });
-    if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
-    renderCourses(await res.json());
-    markDone('courses');
-    navigate('courses');
-  } catch (e) { alert('Courses failed: ' + e.message); }
-  finally { spin('courses-spin', false); }
-}
-
-function renderCourses(data) {
-  const actionBadge = a => {
-    if (!a) return `<span class="action-badge action-none">—</span>`;
-    if (a === 'add_to_cv') return `<span class="action-badge action-add">add to CV</span>`;
-    return `<span class="action-badge action-take">consider taking</span>`;
-  };
-  document.getElementById('courses-content').innerHTML = `
-    <div class="transcript-strip">
-      <div class="transcript-info"><strong>Optional: grade transcript</strong> — upload to see add-to-CV vs consider-taking labels.</div>
-      <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
-        <input type="file" id="transcript-file" accept=".pdf" onchange="document.getElementById('t-name').textContent=this.files[0]?.name||''">
-        <button class="btn" onclick="document.getElementById('transcript-file').click()">Browse PDF</button>
-        <span id="t-name" style="font-size:11px;color:#2e9e6b"></span>
-        <button class="btn btn-primary" onclick="fetchCourses()">Re-fetch</button>
-      </div>
-    </div>
-    ${data.recommendations.map(rec => `
-      <div class="gap-block">
-        <div class="gap-title"><span class="gap-tag">gap</span>${rec.skill_gap}</div>
-        <div class="course-table">
-          ${rec.courses.map(c => `
-            <div class="course-row">
-              <div class="course-num">${c.course_number}</div>
-              <div>${c.title}</div>
-              <div class="course-ects">${c.ects} ECTS</div>
-              ${actionBadge(c.action)}
-            </div>`).join('')}
-        </div>
-      </div>`).join('') || '<p style="color:#aaa;font-size:13px">No recommendations.</p>'}`;
-}
-
-async function fetchQuestions() {
-  spin('questions-spin', true);
-  try {
-    const res = await fetch(API + '/questions/');
-    if (!res.ok) throw new Error((await res.json()).detail || 'Failed');
-    renderQuestions(await res.json());
-    markDone('questions');
-    navigate('questions');
-  } catch (e) { alert('Questions failed: ' + e.message); }
-  finally { spin('questions-spin', false); }
-}
-
-function renderQuestions(data) {
-  document.getElementById('questions-content').innerHTML =
-    data.questions.map(q => `
-      <div class="q-block">
-        <div class="q-skill">${q.skill}</div>
-        <div class="q-main">${q.question}</div>
-        <div class="q-follow">↳ ${q.follow_up}</div>
-        ${q.cv_anchor ? `<div class="q-anchor">CV: ${q.cv_anchor}</div>` : ''}
-      </div>`).join('') || '<p style="color:#aaa;font-size:13px">No questions generated.</p>';
-}
-
-function showAlert(id, msg, type) {
-  const el = document.getElementById(id);
-  el.innerHTML = `<div class="alert alert-${type}">${msg}</div>`;
-  setTimeout(() => { el.innerHTML = ''; }, 3500);
-}
-function spin(id, on) { const el = document.getElementById(id); if (el) el.style.display = on ? 'inline-block' : 'none'; }
-function updateRunBtn() { document.getElementById('run-btn').disabled = !(state.cvUploaded && state.jobUploaded); }
-function markDone(panel) {
-  const nav = document.getElementById('nav-' + panel);
-  nav.classList.add('done');
-  const b = document.getElementById('badge-' + panel);
-  b.textContent = 'done'; b.className = 'nav-badge nb-done'; b.style.display = '';
+function setStatus(state, text) {
+  document.getElementById('statusDot').className = 'status-dot ' + state;
+  document.getElementById('statusText').textContent = text;
 }
 
 checkHealth();
+
+// ── Toast ──────────────────────────────────────────────
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2500);
+}
+
+// ── Error display ──────────────────────────────────────
+function showError(id, msg) {
+  document.getElementById(id).innerHTML = msg ? `<div class="error-msg">${msg}</div>` : '';
+}
+
+function setLoading(btn, isLoading, defaultText) {
+  btn.disabled = isLoading;
+  btn.innerHTML = isLoading
+    ? `<span class="loading-ring"></span> Loading…`
+    : defaultText;
+}
+
+// ── Upload CV ──────────────────────────────────────────
+async function uploadCV() {
+  const btn = document.getElementById('uploadCvBtn');
+  const text = document.getElementById('cvText').value.trim();
+  const file = document.getElementById('cvFile').files[0];
+  showError('cvError', '');
+
+  if (!text && !file) {
+    showError('cvError', 'Paste your CV text or upload a PDF.');
+    return;
+  }
+
+  setLoading(btn, true, 'Upload CV');
+  try {
+    let res;
+    if (file) {
+      const fd = new FormData();
+      fd.append('file', file);
+      res = await fetch(`${API}/cv/pdf`, { method: 'POST', body: fd });
+    } else {
+      const fd = new FormData();
+      fd.append('text', text);
+      res = await fetch(`${API}/cv/text`, { method: 'POST', body: fd });
+    }
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || `HTTP ${res.status}`);
+    }
+    cvUploaded = true;
+    updateChip('cvChip', true);
+    updateAnalyseBtn();
+    toast('CV uploaded ✓');
+  } catch (e) {
+    showError('cvError', e.message);
+  } finally {
+    setLoading(btn, false, 'Upload CV');
+  }
+}
+
+// ── Upload job posting ─────────────────────────────────
+async function uploadJob() {
+  const btn = document.getElementById('uploadJobBtn');
+  const text = document.getElementById('jobText').value.trim();
+  showError('jobError', '');
+
+  if (!text) {
+    showError('jobError', 'Paste the job posting text.');
+    return;
+  }
+
+  setLoading(btn, true, 'Upload Job Posting');
+  try {
+    const fd = new FormData();
+    fd.append('text', text);
+    const res = await fetch(`${API}/job-posting/text`, { method: 'POST', body: fd });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || `HTTP ${res.status}`);
+    }
+    jobUploaded = true;
+    updateChip('jobChip', true);
+    updateAnalyseBtn();
+    toast('Job posting uploaded ✓');
+  } catch (e) {
+    showError('jobError', e.message);
+  } finally {
+    setLoading(btn, false, 'Upload Job Posting');
+  }
+}
+
+function updateChip(id, ok) {
+  const el = document.getElementById(id);
+  el.className = `upload-chip ${ok ? 'chip-ok' : 'chip-no'}`;
+  el.textContent = ok ? '✓ uploaded' : 'not uploaded';
+}
+
+function updateAnalyseBtn() {
+  document.getElementById('analyseBtn').disabled = !(cvUploaded && jobUploaded);
+}
+
+// ── Run Analysis ───────────────────────────────────────
+async function runAnalysis() {
+  const btn = document.getElementById('analyseBtn');
+  showError('analyseError', '');
+  setLoading(btn, true, 'Run Analysis');
+
+  try {
+    const res = await fetch(`${API}/analyse/`);
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || `HTTP ${res.status}`);
+    }
+    lastAnalysis = await res.json();
+    renderAnalysis(lastAnalysis);
+    document.getElementById('emptyState').style.display = 'none';
+    document.getElementById('resultsContent').style.display = 'block';
+    toast('Analysis complete ✓');
+  } catch (e) {
+    showError('analyseError', e.message);
+  } finally {
+    setLoading(btn, false, 'Run Analysis');
+  }
+}
+
+function renderAnalysis(data) {
+  document.getElementById('jobTitleBadge').textContent = data.job_title_inferred;
+  document.getElementById('analysisSummary').innerHTML = data.summary;
+
+  // Covered skills
+  const covered = document.getElementById('coveredSkillsList');
+  covered.innerHTML = data.covered_skills.length === 0
+    ? '<p style="color:var(--gray-400);font-size:13px;">None found.</p>'
+    : data.covered_skills.map(s => `
+      <div class="skill-item skill-covered">
+        <div class="skill-label">${escHtml(s.label)}
+          <span class="skill-badge badge-${s.evidence_type}">${s.evidence_type}</span>
+          ${s.category === 'bonus' ? '<span class="skill-badge badge-bonus">bonus</span>' : ''}
+        </div>
+        ${s.evidence_from_cv ? `<div class="skill-evidence">${escHtml(s.evidence_from_cv)}</div>` : ''}
+      </div>`).join('');
+
+  // Gaps
+  const gaps = document.getElementById('gapSkillsList');
+  gaps.innerHTML = data.skill_gaps.length === 0
+    ? '<p style="color:var(--gray-400);font-size:13px;">No gaps found — great CV match!</p>'
+    : data.skill_gaps.map(g => `
+      <div class="skill-item skill-gap-item">
+        <div class="skill-label">${escHtml(g.label)}
+          <span class="skill-badge badge-${g.category}">${g.category}</span>
+        </div>
+      </div>`).join('');
+}
+
+// ── Courses ────────────────────────────────────────────
+async function runCourses() {
+  const panel = document.getElementById('coursesPanel');
+  const body = document.getElementById('coursesBody');
+  panel.style.display = 'block';
+  body.innerHTML = '<div class="empty-state"><span class="loading-ring" style="border-color:var(--gray-200);border-top-color:var(--teal);"></span></div>';
+
+  try {
+    const res = await fetch(`${API}/courses/`, { method: 'POST' });
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    renderCourses(data.recommendations);
+  } catch (e) {
+    body.innerHTML = `<div class="error-msg">${e.message}</div>`;
+  }
+}
+
+function renderCourses(recs) {
+  const body = document.getElementById('coursesBody');
+  if (!recs || recs.length === 0) {
+    body.innerHTML = '<div class="empty-state"><p>No course recommendations found.</p></div>';
+    return;
+  }
+  body.innerHTML = recs.map(r => `
+    <div class="gap-block">
+      <div class="gap-block-title">${escHtml(r.skill_gap)}</div>
+      ${r.courses.map(c => `
+        <div class="course-card">
+          <div>
+            <div class="course-code">${escHtml(c.course_number)}</div>
+            <div class="course-title">${escHtml(c.title)}</div>
+          </div>
+          <div class="ects-badge">${c.ects} ECTS</div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+// ── Questions ──────────────────────────────────────────
+async function runQuestions() {
+  const panel = document.getElementById('questionsPanel');
+  const body = document.getElementById('questionsBody');
+  panel.style.display = 'block';
+  body.innerHTML = '<div class="empty-state"><span class="loading-ring" style="border-color:var(--gray-200);border-top-color:var(--navy);"></span></div>';
+
+  try {
+    const res = await fetch(`${API}/questions/`);
+    if (!res.ok) {
+      const e = await res.json().catch(() => ({}));
+      throw new Error(e.detail || `HTTP ${res.status}`);
+    }
+    const data = await res.json();
+    renderQuestions(data.questions);
+  } catch (e) {
+    body.innerHTML = `<div class="error-msg">${e.message}</div>`;
+  }
+}
+
+function renderQuestions(questions) {
+  const body = document.getElementById('questionsBody');
+  if (!questions || questions.length === 0) {
+    body.innerHTML = '<div class="empty-state"><p>No questions generated.</p></div>';
+    return;
+  }
+  body.innerHTML = questions.map(q => `
+    <div class="question-card">
+      <div class="question-header">
+        <span class="q-skill-tag">${escHtml(q.skill)}</span>
+      </div>
+      <div class="question-body">
+        <div class="question-text">${escHtml(q.question)}</div>
+        <div class="follow-up">${escHtml(q.follow_up)}</div>
+        ${q.cv_anchor ? `<div class="cv-anchor">
+          <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 12h6m-3-3v6M3 12a9 9 0 1 0 18 0A9 9 0 0 0 3 12z"/></svg>
+          ${escHtml(q.cv_anchor)}
+        </div>` : ''}
+      </div>
+    </div>`).join('');
+}
+
+function escHtml(str) {
+  return String(str ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// ── File drag/drop label update ────────────────────────
+document.getElementById('cvFile').addEventListener('change', function() {
+  if (this.files[0]) {
+    document.getElementById('cvDropzone').innerHTML = `
+      <input type="file" accept=".pdf" id="cvFile">
+      <svg width="24" height="24" fill="none" stroke="var(--teal)" stroke-width="1.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 1 1-18 0 9 9 0 0 1 18 0z"/></svg>
+      <span style="color:var(--teal); font-weight:500;">${this.files[0].name}</span>`;
+    document.getElementById('cvFile').addEventListener('change', arguments.callee);
+    document.getElementById('cvText').value = '';
+  }
+});
 </script>
 </body>
 </html>

@@ -1,0 +1,27 @@
+oin us in this role where you’ll help develop data and statistically driven tools for our trading floor. You’ll influence decisions and handle tasks on your own, thereby contributing with your knowledge and expertise. You're expected to be able to work 15 hours weekly.
+
+Welcome to Operations in Bioenergy
+
+You’ll be part of Advanced Analytics where you, together with your colleagues, will develop forecasts, analyses, and dashboards which provide our trading floor with a strong basis for data and statistical driven decision making in the daily operation at our Danish power stations, wind turbines, solar PV, electric boilers, heat pumps, and P2X. As a team, we continuously strive to do better and develop our skillset. In our team we have an informal and very open culture and you’ll always be able to get help and learn from your colleagues.
+
+You’ll play an important role in: 
+
+    developing and implementing performance tracking
+    developing dashboards to visualise decision support and performance tracking
+    developing and implementing forecasting models using AI/ML/DL, incl. stochastic modelling and statistical data analysis
+    communicating and collaborating with internal and external stakeholders, i.e., team members, traders, etc.
+
+To succeed in the role, you: 
+
+    are currently studying data science, applied mathematics, or another relevant course within analytics and/or engineering
+    have at least two years left before graduating
+    are a strong Python programmer
+    have experience with writing and reviewing maintainable and testable code
+    are familiar with machine-learning concepts (supervised and unsupervised learning) and data analytics
+    possess knowledge of Git, Docker & Kubernetes, or electricity markets - this will seen as a benefit but however not a requirement.
+
+Maybe you’ve read the above and can see you have some transferable skills, even though they don’t quite match all the points. If you think you can bring something to the team, we still encourage you to apply.
+
+Shape the future with us
+
+Send your application and CV to us as soon as possible. We’ll be conducting interviews on a continuous basis and reserve the right to take down the advert when we’ve found the right candidate.
