@@ -5,6 +5,7 @@ from fastapi import APIRouter, Depends, File, HTTPException, Request, UploadFile
 from app.dependencies import get_store
 from app.models import CVRequest, CVUploadResponse
 from app.store import Store
+from app.services.pdf_parser import extract_text_from_pdf
 
 router = APIRouter()
 
@@ -36,5 +37,16 @@ async def upload_cv_text(
         message=f"CV uploaded successfully ({len(text):,} characters).",
         character_count=len(text),
     )
-
+    
+@router.post("/pdf", response_model=CVUploadResponse, status_code=200)
+async def upload_cv_pdf(
+    file: UploadFile = File(...),
+    store: Store = Depends(get_store),
+) -> CVUploadResponse:
+    contents = await file.read()
+    text = extract_text_from_pdf(contents)
+    if not text:
+        raise HTTPException(status_code=422, detail="Could not extract text from PDF.")
+    store.set_cv(text)
+    return CVUploadResponse(message=f"CV uploaded successfully ({len(text):,} characters).", character_count=len(text))
 

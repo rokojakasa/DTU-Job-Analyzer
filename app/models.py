@@ -62,6 +62,7 @@ class CoveredSkill(BaseModel):
     job_posting_label: str
     evidence_from_cv: str
     evidence_type: EvidenceType
+    category: SkillCategory  
 
 
 class SkillGap(BaseModel):
@@ -105,7 +106,7 @@ class InterviewQuestion(BaseModel):
     skill: str
     question: str
     follow_up: str
-    cv_anchor: str
+    cv_anchor: Optional[str] = None
 
 
 class QuestionsResponse(BaseModel):
